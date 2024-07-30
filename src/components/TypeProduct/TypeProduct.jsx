@@ -1,9 +1,9 @@
 import React from 'react'
 
-const TyProduct = ({ name }) => {
+const TypeProduct = ({ name }) => {
   return (
     <div>{name}</div>
   )
 }
 
-export default TyProduct
+export default TypeProduct

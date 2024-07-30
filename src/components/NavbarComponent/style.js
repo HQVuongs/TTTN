@@ -7,7 +7,7 @@ export const WrapperLableText = styled.h4`
 `
 export const WrapperTextValue = styled.div`
     color: rbg(56, 56, 61);
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 400;
 `
 
