@@ -32,9 +32,14 @@ export const WrapperPriceText = styled.div`
     font-weight: bold;
 `
 export const WrapperDiscountText = styled.span`
-    color: #c00;
+    color: rgb(204, 0, 0);
     font-size: 12px;
     line-height: 22px;
     margin-right: 5px;
     font-weight: bold;
+`
+export const WrapperStyleTextSell = styled.span`
+    font-size: 15px;
+    line-height: 24px;
+    color: rgb(120, 120, 120);
 `
