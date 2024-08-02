@@ -13,9 +13,8 @@ export const WrapperTextValue = styled.div`
 
 export const WrapperContent = styled.div`
     display: flex;
-    //align-items: center;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
 `
 export const WrapperTextPrice = styled.div`
     padding: 4px;

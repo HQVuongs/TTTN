@@ -12,19 +12,20 @@ const HeaderComponent = () => {
   return (
     <div>
     <WrapperHeader>
-        <Col span={6}>
+        <Col span={5}>
             <WrapperTextHeader>FOCOSHOP</WrapperTextHeader>
         </Col>
-        <Col span={12}>
+        <Col span={13}>
         <ButtonInputSearch
         size="large"
+        bordered={false}
         textButton="Tìm kiếm"
         placeholder="Nhập thông tin tìm kiếm"
         // onSearch={onSearch}
 
             />
         </Col>
-        <Col span={6} style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <Col span={6} style={{ display: 'flex', gap: '54px', alignItems: 'center' }}>
             <WrapperHeaderAccount>
                 <UserOutlined style={{ fontSize: '20px' }} />
                 <div>
