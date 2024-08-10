@@ -7,7 +7,7 @@ const CardComponent = () => {
     <WrapperCardStyle
         hoverable
         style={{ width: 200 }}
-        bodyStyle={{ padding: '10px'}}
+        styles={ {body:{ padding: '10px'}}}
         cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
     >
         <StyleNameProduct>Dao katana</StyleNameProduct>
