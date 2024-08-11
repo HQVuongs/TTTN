@@ -4,11 +4,18 @@ const createUser = async (req, res) => {
     try {
         const { name, email, password, confirmPassword, phone} = req.body
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
+        const phoneReg = /^0[0-9]{9,10}$/;
         const isCheckEmail = reg.test(email)
+        const isCheckPhone = phoneReg.test(phone)
         if(!name || !email || !password || !confirmPassword || !phone){
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The input is required'
+            })
+        }else if(!isCheckPhone) {
+            return res.status(200).json({
+                status: 'ERR',
+                message: 'Phone number is not valid'
             })
         }else if(!isCheckEmail) {
             return res.status(200).json({
@@ -32,10 +39,11 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const { name, email, password, confirmPassword, phone} = req.body
+        const { email, password } = req.body
+        console.log(email, password)
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
         const isCheckEmail = reg.test(email)
-        if(!name || !email || !password || !confirmPassword || !phone){
+        if(!email || !password){
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The input is required'
@@ -45,11 +53,6 @@ const loginUser = async (req, res) => {
                 status: 'ERR',
                 message: 'The input is email'
             })
-        }else if(password !== confirmPassword) {
-            return res.status(200).json({
-                status: 'ERR',
-                message: 'The password is equal confirmPassword '
-            })            
         }
         const response = await UserService.loginUser(req.body)
         return res.status(200).json(response)
