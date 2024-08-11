@@ -10,11 +10,23 @@ import imageLogo from "../../assets/images/logo-login.png";
 import { Image } from "antd";
 import { EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import * as UserService from "../../services/UserService"
+import { useMutationHooks } from "../../hooks/userMutationHook";
+import Loading from "../../components/LoadingComponent/Loading";
+
+
 const SignInPage = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const navigate = useNavigate()
   const  [email, setEmail] = useState('');
   const  [password, setPassword] = useState('');
+
+  const mutation = useMutationHooks(
+    data => UserService.loginUser(data)
+  )
+
+  const {data, isPending} = mutation
+
   const handleNavigateSignUp = () => {
     navigate('/sign-up')
   }
@@ -28,6 +40,10 @@ const SignInPage = () => {
   }
 
   const handleSignIn = () => {
+    mutation.mutate({
+      email,
+      password
+    })
     console.log('success', email, password)
   }
 
@@ -78,7 +94,9 @@ const SignInPage = () => {
               onChange={handleOnchangePassword}
             />
           </div>
-
+          
+          {data?.status === 'ERR' && <span style={{ color: 'red'}}>{data?.message}</span>}
+          <Loading isPending={isPending}>
           <ButtonComponent
             disabled ={!email.length || !password.length}
             onClick={handleSignIn}
@@ -98,6 +116,7 @@ const SignInPage = () => {
               fontWeight: "700",
             }}
           ></ButtonComponent>
+          </Loading>
           <WrapperTextLight>Quên mật khẩu</WrapperTextLight>
           <p>
             Chưa có tài khoản?{" "}

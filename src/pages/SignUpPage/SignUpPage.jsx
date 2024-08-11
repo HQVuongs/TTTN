@@ -10,15 +10,31 @@ import { Image } from "antd";
 import imageLogo from "../../assets/images/logo-login.png";
 import { EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import * as UserService from "../../services/UserService"
+import { useMutationHooks } from "../../hooks/userMutationHook";
+import Loading from "../../components/LoadingComponent/Loading";
 
 const SignUpPage = () => {
   const navigate = useNavigate()
   const [isShowPassword, setIsShowPassword] = useState(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
+  const  [name, setName] = useState('');
+  const  [phone, setPhone] = useState('');
   const  [email, setEmail] = useState('');
   const  [password, setPassword] = useState('');
   const  [confirmPassword, setConfirmPassword] = useState('');
 
+  const mutation = useMutationHooks(
+    data => UserService.signUpUser(data)
+  )
+  const {data, isPending} = mutation 
+
+  const handleOnchangeName = (value) => {
+    setName(value)
+  }
+  const handleOnchangePhone = (value) => {
+    setPhone(value)
+  }
   const handleOnchangeEmail = (value) => {
     setEmail(value)
   }
@@ -31,6 +47,7 @@ const SignUpPage = () => {
   }
 
   const handleSignUp = () => {
+    mutation.mutate({ name, phone, email, password, confirmPassword })
     console.log('sign-up', email, password, confirmPassword)
   }
 
@@ -60,6 +77,18 @@ const SignUpPage = () => {
         <WrapperContainerLeft>
           <h1>Xin chào</h1>
           <p>Đăng nhập hoặc tạo tài khoản</p>
+          <InputForm
+            style={{ marginBottom: "10px" }}
+            placeholder="Name"
+            value={name}
+            onChange={handleOnchangeName}
+          />
+          <InputForm
+            style={{ marginBottom: "10px" }}
+            placeholder="Phone"
+            value={phone}
+            onChange={handleOnchangePhone}
+          />         
           <InputForm
             style={{ marginBottom: "10px" }}
             placeholder="abc@gmail.com"
@@ -105,8 +134,10 @@ const SignUpPage = () => {
               onChange={handleOnchangeConfirmPassword}
             />
           </div>
+          {data?.status === 'ERR' && <span style={{ color: 'red'}}>{data?.message}</span>}
+          <Loading isPending={isPending}>
           <ButtonComponent
-          disabled ={!email.length || !password.length || !confirmPassword.length}
+          disabled ={!name.length || !email.length || !password.length || !confirmPassword.length || !phone.length}
           onClick={handleSignUp}
             size={40}
             styleButton={{
@@ -124,6 +155,7 @@ const SignUpPage = () => {
               fontWeight: "700",
             }}
           ></ButtonComponent>
+          </Loading>
           <WrapperTextLight>Quên mật khẩu</WrapperTextLight>
           <p>
             Bạn đã có tài khoản? <WrapperTextLight onClick={handleNavigateSignIn}>Đăng nhập</WrapperTextLight>
