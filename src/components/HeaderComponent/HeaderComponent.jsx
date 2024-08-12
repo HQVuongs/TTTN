@@ -9,9 +9,11 @@ import {
   } from '@ant-design/icons';
 import ButtonInputSearch from '../ButtonInputSearch/ButtonInputSearch';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 const HeaderComponent = () => {
 
     const  navigate = useNavigate()
+    const user = useSelector((state) => state.user)
     const handleNavigateLogin = () => {
         navigate('/sign-in')
     }
@@ -33,18 +35,23 @@ const HeaderComponent = () => {
         <Col span={6} style={{ display: 'flex', gap: '54px', alignItems: 'center' }}>
             <WrapperHeaderAccount>
                 <UserOutlined style={{ fontSize: '20px' }} />
-                <div onClick={handleNavigateLogin} style={{ cursor: 'pointer'}}>
-                    <WrapperTextHeaderSmall>Đăng nhập/Đăng ký</WrapperTextHeaderSmall>
-                    <div>
-                    <WrapperTextHeaderSmall>Tài Khoản</WrapperTextHeaderSmall>
-                    <CaretDownOutlined />
+                {user?.name ? (
+                    <div style={{ cursor: 'pointer'}}>Xin chào, {user.name}</div>
+                ) : (
+                    <div onClick={handleNavigateLogin} style={{ cursor: 'pointer'}}>
+                        <WrapperTextHeaderSmall>Đăng nhập/Đăng ký</WrapperTextHeaderSmall>
+                        <div>
+                        <WrapperTextHeaderSmall>Tài Khoản</WrapperTextHeaderSmall>
+                        <CaretDownOutlined />
+                        </div>
                     </div>
-                </div>
+                )}
+
             </WrapperHeaderAccount>
             <div>
                 <Badge count={4} size="small" style={{ backgroundColor: 'rgb(0,128,0)'}}>
                     <ShoppingCartOutlined style={{ fontSize: '20px', color: '#fff' }} />
-                    <WrapperTextHeaderSmall>Giỏ Hàng</WrapperTextHeaderSmall>
+                    <WrapperTextHeaderSmall style={{ cursor: 'pointer'}}>Giỏ Hàng</WrapperTextHeaderSmall>
                 </Badge>
             </div>
         </Col>

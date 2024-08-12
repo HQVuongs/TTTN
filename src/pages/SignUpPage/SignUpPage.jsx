@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   WrapperContainerLeft,
   WrapperContainerRight,
@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import * as UserService from "../../services/UserService"
 import { useMutationHooks } from "../../hooks/userMutationHook";
 import Loading from "../../components/LoadingComponent/Loading";
+import * as message from '../../components/Message/Message'
 
 const SignUpPage = () => {
   const navigate = useNavigate()
@@ -27,7 +28,14 @@ const SignUpPage = () => {
   const mutation = useMutationHooks(
     data => UserService.signUpUser(data)
   )
-  const {data, isPending} = mutation 
+  const {data, isPending, isSuccess} = mutation 
+
+  useEffect(() => {
+    if(isSuccess && data?.status !== 'ERR') {
+      message.success()
+      handleNavigateSignIn()
+    }
+  }, [isSuccess])
 
   const handleOnchangeName = (value) => {
     setName(value)
