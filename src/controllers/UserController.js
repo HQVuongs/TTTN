@@ -40,7 +40,6 @@ const createUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body
-        console.log(email, password)
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
         const isCheckEmail = reg.test(email)
         if(!email || !password){
@@ -55,7 +54,12 @@ const loginUser = async (req, res) => {
             })
         }
         const response = await UserService.loginUser(req.body)
-        return res.status(200).json(response)
+        const { refresh_token, ...newResponse} = response
+        res.cookie('refresh_token', refresh_token, {
+            HttpOnly: true, //chi lay thang cookie qua thang http ko lay duoc qua javascript
+            Secure: true, //bao mat ben client
+        })
+        return res.status(200).json(newResponse)
     }catch(e){
         return res.status(404).json({
             message: e
@@ -130,7 +134,7 @@ const getDetailsUser = async (req, res) => {
 
 const refreshToken = async (req, res) => {
     try {
-        const token = req.headers.token?.split(' ')[1]
+        const token = req.cookies.refresh_token
         if(!token){
             return res.status(200).json({
                 status: 'ERR',
