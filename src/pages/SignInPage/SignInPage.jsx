@@ -37,7 +37,7 @@ const SignInPage = () => {
     if(isSuccess && data?.status !== 'ERR') {
       message.success()
       navigate('/')
-      localStorage.setItem('access_token', data?.access_token)
+      localStorage.setItem('access_token', JSON.stringify(data?.access_token))
       if(data?.access_token) {
         const decoded = jwtDecode(data?.access_token)
         if(decoded?.id) {
