@@ -56,8 +56,9 @@ const loginUser = async (req, res) => {
         const response = await UserService.loginUser(req.body)
         const { refresh_token, ...newResponse} = response
         res.cookie('refresh_token', refresh_token, {
-            HttpOnly: true, //chi lay thang cookie qua thang http ko lay duoc qua javascript
-            Secure: true, //bao mat ben client
+            httpOnly: true, //chi lay thang cookie qua thang http ko lay duoc qua javascript
+            secure: false, //bao mat ben client
+            sameSite: 'strict'
         })
         return res.status(200).json(newResponse)
     }catch(e){
@@ -150,6 +151,20 @@ const refreshToken = async (req, res) => {
     }
 }
 
+const logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token')
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Logout successfully'
+        })
+    }catch(e){
+        return res.status(404).json({
+            message: e
+        })
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
@@ -157,5 +172,6 @@ module.exports = {
     deleteUser,
     getAllUser,
     getDetailsUser,
-    refreshToken
+    refreshToken,
+    logoutUser 
 }

@@ -28,13 +28,11 @@ const authUserMiddleWare = (req, res, next) => {
     const userId = req.params.id
     jwt.verify(token, process.env.ACCESS_TOKEN, function(err, user) {
         if(err){
-            console.log('err', err)
             return res.status(404).json({
                 message: 'The authentication 12',
                 status: 'ERROR'
             })  
         }
-        console.log('user', user)
         if(user?.isAdmin ||  user?.id === userId){
             next()
         }else {
