@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Badge, Button, Col, Popover } from 'antd'
 import { WrapperContentPopup, WrapperHeader, WrapperHeaderAccount, WrapperTextHeader, WrapperTextHeaderSmall } from './style'
 import {
@@ -8,7 +8,7 @@ import {
 
   } from '@ant-design/icons';
 import ButtonInputSearch from '../ButtonInputSearch/ButtonInputSearch';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import * as UserService from "../../services/UserService"
 import { resetUser } from '../../redux/slides/userSlide';
@@ -21,6 +21,8 @@ const HeaderComponent = () => {
     const user = useSelector((state) => state.user)
     const dispatch = useDispatch()
     const [pending, setPending] = useState(false)
+    const [userName, setUserName] = useState('')
+    const [userAvatar, setUserAvatar] = useState('')
     const handleNavigateLogin = () => {
         navigate('/sign-in')
     }
@@ -30,17 +32,27 @@ const HeaderComponent = () => {
         dispatch(resetUser())
         setPending(false)
     }
+
+    useEffect(() => {
+        setPending(true)
+        setUserName(user?.name)
+        setUserAvatar(user?.avatar)
+        setPending(false)
+    }, [user?.name, user?.avatar])
+
     const content = (
         <div>
           <WrapperContentPopup onClick = {handleLogout}>Đăng xuất</WrapperContentPopup>
-          <WrapperContentPopup>Thông tin người dùng</WrapperContentPopup>
+          <WrapperContentPopup onClick={() => navigate('/profile-user')}>Thông tin người dùng</WrapperContentPopup>
         </div>
       );
   return (
     <div>
     <WrapperHeader>
         <Col span={5}>
-            <WrapperTextHeader>FOCOSHOP</WrapperTextHeader>
+            <Link to="/" >
+                <WrapperTextHeader link='/'>FOCOSHOP</WrapperTextHeader>
+            </Link>
         </Col>
         <Col span={13}>
         <ButtonInputSearch
@@ -54,8 +66,18 @@ const HeaderComponent = () => {
         <Col span={6} style={{ display: 'flex', gap: '54px', alignItems: 'center' }}>
         <Loading isPending={pending}>
             <WrapperHeaderAccount>
+                {userAvatar ? (
+                    <img src={userAvatar} alt='avatar' style={{
+                        height: '30px',
+                        width: '30px',
+                        borderRadius: '50%',
+                        objectFit: 'cover'
+                    }}/>
+                ) : (
                 <UserOutlined style={{ fontSize: '20px' }} />
-                {user?.name ? (
+
+                )}
+                {user?.access_token ? (
                     <>
                     
                     <Popover content={content} trigger="hover">
