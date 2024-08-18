@@ -17,6 +17,7 @@ export const WrapperButtonMore = styled(ButtonComponent)`
             color: #fff;    
         }
     }
+    background: #fff;
     width: 100%;
     text-align: center;
 `

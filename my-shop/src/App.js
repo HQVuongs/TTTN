@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import axios from 'axios'
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 import { routes } from "./routes"
@@ -7,12 +7,17 @@ import { useQuery } from '@tanstack/react-query'
 import { isJsonString } from './utils'
 import { jwtDecode } from 'jwt-decode'
 import * as UserService from "./services/UserService"
-import {useDispatch} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import { updateUser } from './redux/slides/userSlide'
+import Loading from './components/LoadingComponent/Loading'
 
 function App() {
   const dispatch = useDispatch ();
+  const [isPending, setIsPending] = useState(false)
+  const user = useSelector((state) => state.user)
+
     useEffect(() => {
+      setIsPending(true)
       const {storageData, decoded} = handleDecoded()
           if(decoded?.id) {
             handleGetDetailUser(decoded?.id, storageData)
@@ -47,19 +52,22 @@ function App() {
     const handleGetDetailUser = async(id, token) => {
       const res = await UserService.getDetailUser(id, token)
       dispatch(updateUser({...res?.data, access_token: token}))
+      setIsPending(false)
     }
     
 
   return (
     <div>
+      <Loading isPending={isPending}>
         <Router>
           <Routes>
             {routes.map((route) => {
               const Page = route.page
+              const isCheckAuth = !route.isPrivate || user.isAdmin
               // doan nay khi la neu isShowHeader la true thi sẽ hiện ra các thành phần có trong Default, ngược lại thì sẽ là fragment
               const Layout = route.isShowHeader ? DefaultComponent : Fragment
               return (
-                <Route key={route.path} path={route.path} element={
+                <Route key={route.path} path={isCheckAuth ? route.path: undefined} element={
                   <Layout>
                     <Page />
                   </Layout>
@@ -69,6 +77,7 @@ function App() {
 
           </Routes>
         </Router>
+      </Loading>
     </div>
   )
 }

@@ -47,13 +47,13 @@ const ProfilePage = () => {
     if (isSuccess) {
         message.success()
         window.location.reload();
-        handleGetDetailsUser(user?.id, user?.access_token)
+        handleGetDetailUser(user?.id, user?.access_token)
     } else if (isError) {
         message.error()
     }
 }, [isSuccess, isError])
 
-const handleGetDetailsUser = async (id, token) => {
+const handleGetDetailUser = async (id, token) => {
     const res = await UserService.getDetailUser(id, token)
     dispatch(updateUser({ ...res?.data, access_token: token }))
 }

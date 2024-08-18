@@ -1,3 +1,4 @@
+import AdminPage from "../pages/AdminPage/AdminPage";
 import HomePage from "../pages/HomePage/HomePage";
 import NotFoundPage from "../pages/NotFoundPage/NotFoundPage";
 import OrderPage from "../pages/OrderPage/OrderPage";
@@ -12,43 +13,51 @@ export const routes = [
     {
         path: '/',
         page: HomePage,
-        isShowHeader: true
+        isShowHeader: true,
     },
 
     {
         path: '/order',
         page: OrderPage,
-        isShowHeader: true
+        isShowHeader: true,
     },
     {
         path: '/products',
         page: ProductsPage,
-        isShowHeader: true
+        isShowHeader: true,
     },
     {
         path: '/:type',
         page: TypeProductPage,
-        isShowHeader: true
+        isShowHeader: true,
     },
     {
         path: '/sign-in',
         page: SignInPage,
-        isShowHeader: false
+        isShowHeader: false,
     },
     {
         path: '/sign-up',
         page: SignUpPage,
-        isShowHeader: false
+        isShowHeader: false,
+
     },
     {
         path: '/product-details',
         page: ProductDetailsPage,
-        isShowHeader: true
+        isShowHeader: true,
     },
     {
         path: '/profile-user',
         page: ProfilePage,
-        isShowHeader: true
+        isShowHeader: true,
+        isPrivate: false
+    },
+    {
+        path: '/system/admin',
+        page: AdminPage,
+        isShowHeader: false,
+        isPrivate: true
     },
     {
         path: '*',
