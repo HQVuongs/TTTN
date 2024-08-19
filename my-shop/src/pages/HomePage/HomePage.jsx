@@ -13,7 +13,6 @@ const HomePage = () => {
   const arr = ["Dao", "Keo", "Tu lanh"];
   const fetchProductAll = async () => {
     const res = await ProductService.getAllProduct();
-    //console.log('res', res)
     return res;
   };
   const { isPending, data: products } = useQuery({
@@ -22,7 +21,6 @@ const HomePage = () => {
     retry: 3,
     retryDelay: 1000,
   });
-  console.log("data", products);
   return (
     <>
       <div style={{ width: "1270px", margin: "0 auto" }}>

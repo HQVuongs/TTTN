@@ -5,7 +5,7 @@ import { routes } from "./routes"
 import DefaultComponent from './components/DefaultComponent/DefaultComponent'
 import { useQuery } from '@tanstack/react-query'
 import { isJsonString } from './utils'
-import { jwtDecode } from 'jwt-decode'
+import  { jwtDecode }  from "jwt-decode"
 import * as UserService from "./services/UserService"
 import {useDispatch, useSelector} from 'react-redux'
 import { updateUser } from './redux/slides/userSlide'
@@ -19,9 +19,10 @@ function App() {
     useEffect(() => {
       setIsPending(true)
       const {storageData, decoded} = handleDecoded()
-          if(decoded?.id) {
+          if (decoded?.id) {
             handleGetDetailUser(decoded?.id, storageData)
         }
+        setIsPending(false)
 
     }, [])
 
@@ -50,9 +51,13 @@ function App() {
     });
 
     const handleGetDetailUser = async(id, token) => {
-      const res = await UserService.getDetailUser(id, token)
-      dispatch(updateUser({...res?.data, access_token: token}))
-      setIsPending(false)
+      try {
+        const res = await UserService.getDetailUser(id, token)
+        dispatch(updateUser({...res?.data, access_token: token}))
+      } catch (err) {
+        console.error("Error fetching user details", err)
+      }
+      
     }
     
 
