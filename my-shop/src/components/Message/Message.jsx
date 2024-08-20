@@ -1,10 +1,10 @@
 import { message } from "antd";
 
-const success = (mes = 'Success') => {
+const success = (mes = 'Thành công') => {
     message.success(mes);
   };
   
-  const error = (mes = 'Err') => {
+  const error = (mes = 'Lỗi, vui lòng thử lại!') => {
     message.error(mes);
   };
   

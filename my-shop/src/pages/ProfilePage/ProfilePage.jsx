@@ -4,6 +4,7 @@ import {
   WrapperHeader,
   WrapperInput,
   WrapperLabel,
+  WrapperUploadFile,
 } from "./style";
 import InputForm from "../../components/InputForm/InputForm";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
@@ -16,7 +17,7 @@ import { updateUser } from "../../redux/slides/userSlide";
 import { Button, Upload } from "antd";
 import { UploadOutlined } from '@ant-design/icons'
 import { getBase64 } from "../../utils";
-import { WrapperUploadFile } from "../SignInPage/style";
+
 
 const ProfilePage = () => {
   const user = useSelector((state) => state.user);
