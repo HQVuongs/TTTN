@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { WrapperHeader } from "./style";
-import { Button, Form, Modal } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Button, Form, Space } from "antd";
+import { PlusOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 import TableComponent from "../TableComponent/TableComponent";
 import InputComponent from "../InputComponent/InputComponent";
 import { getBase64 } from "../../utils";
@@ -13,13 +13,19 @@ import * as message from "../../components/Message/Message";
 import { useQuery } from "@tanstack/react-query";
 import DrawerComponent from "../DrawerComponent/DrawerComponent";
 import { useSelector } from "react-redux";
+import ModalComponent from "../ModalComponent/ModalComponent";
 const AdminProduct = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState("");
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const [isPendingUpdate, setIsPendingUpdate] = useState(false);
+  const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
   const user = useSelector((state) => state?.user)
-  const [stateProduct, settStateProduct] = useState({
+
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
+  const [stateProduct, setStateProduct] = useState({
     name: "",
     price: "",
     description: "",
@@ -64,13 +70,24 @@ const AdminProduct = () => {
   const mutationUpdate = useMutationHooks((data) => {
     const {
       id,
-      token,
-      ...rests
+      token
     } = data;
     const res = ProductService.updateProduct(
       id,
+      token);
+    return res;
+  });
+
+  const mutationDelete = useMutationHooks((data) => {
+    const {
+      id,
       token,
-      {...rests});
+      ...rests
+    } = data;
+    const res = ProductService.deleteProduct(
+      id,
+      token,
+      { ...rests });
     return res;
   });
   const getAllProducts = async () => {
@@ -96,33 +113,33 @@ const AdminProduct = () => {
   useEffect(() => {
     form.setFieldsValue(stateProductDetails)
   }, [form, stateProductDetails])
+  
 
   useEffect(() => {
-    if(rowSelected) {
-      fetchGetDetailsProduct(rowSelected)
-    }
-  }, [rowSelected])
-  const handleDetailsProduct = () => {
     if(rowSelected) {
       setIsPendingUpdate(true)
       fetchGetDetailsProduct(rowSelected)
     }
+  }, [rowSelected])
+  const handleDetailsProduct = () => {
     setIsOpenDrawer(true)
   }
 
   const { data, isPending, isSuccess, isError } = mutation;
   const { data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated } = mutationUpdate;
-  console.log('dataUpdate', dataUpdated)
+  const { data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorDeleted } = mutationDelete;
 
-  const { isPending: isPendingProduct, data: products } = useQuery({
+  const queryProduct = useQuery({
     queryKey: ["products"],
     queryFn: getAllProducts,
   });
+  const { isPending: isPendingProduct, data: products } = queryProduct
   const renderAction = () => {
     return (
       <div>
         <DeleteOutlined
           style={{ color: "red", fontSize: "25px", cursor: "pointer" }}
+          onClick={() => setIsModalOpenDelete(true)}
         />
         <EditOutlined
           style={{ color: "blue", fontSize: "25px", cursor: "pointer" }}
@@ -131,19 +148,154 @@ const AdminProduct = () => {
       </div>
     );
   };
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    // setSearchText(selectedKeys[0]);
+    // setSearchedColumn(dataIndex);
+  };
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    // setSearchText('');
+  };
+
+ //tim kiem
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <InputComponent
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={`${selectedKeys[0] || ''}`}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: 'block',
+          }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Tìm
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size="small"
+            style={{
+              width: 90,
+            }}
+          >
+            Xóa
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              close();
+            }}
+          >
+            đóng
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? '#1890ff' : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    // render: (text) =>
+    //   searchedColumn === dataIndex ? (
+    //     // <Highlighter
+    //     //   highlightStyle={{
+    //     //     backgroundColor: '#ffc069',
+    //     //     padding: 0,
+    //     //   }}
+    //     //   searchWords={[searchText]}
+    //     //   autoEscape
+    //     //   textToHighlight={text ? text.toString() : ''}
+    //     // />
+    //   ) : (
+    //     text
+    //   ),
+  });
+
   const columns = [
     {
       title: "Tên sản phẩm",
       dataIndex: "name",
       render: (text) => <a>{text}</a>,
+      sorter: (a,b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name")
     },
     {
       title: "Giá",
       dataIndex: "price",
+      sorter: (a,b) => a.price - b.price,
+      filters: [
+        {
+          text: 'giá từ 50 trở lên',
+          value: '>=',
+        },
+        {
+          text: 'giá từ 50 trở xuống',
+          value: '<=',
+        },
+      ],
+      onFilter: (value, record) => {
+        if(value === ">=") {
+        return record.price >= 50
+        }
+
+        return record.price <=50
+        
+      }
     },
     {
       title: "Chất lượng",
       dataIndex: "rating",
+      sorter: (a,b) => a.rating - b.rating,
+      filters: [
+        {
+          text: '3 sao trở lên',
+          value: '>=',
+        },
+        {
+          text: '3 sao trở xuống',
+          value: '<=',
+        },
+      ],
+      onFilter: (value, record) => {
+        if(value === ">=") {
+        return record.rating >= 3
+        }
+
+        return record.rating <=3
+        
+      }
     },
     {
       title: "Loại",
@@ -170,22 +322,69 @@ const AdminProduct = () => {
   }, [isSuccess]);
 
   useEffect(() => {
+    if (isSuccessDeleted && dataDeleted?.status === "OK") {
+      message.success();
+      handleCancelDelete();
+    } else if (dataDeleted?.status === "ERR") {
+      message.error();
+    }
+  }, [isSuccessDeleted]);
+  
+  const handleCancelDelete = () => {
+    setIsModalOpenDelete(false)
+  }
+  const handleDeleteProduct = () => {
+    mutationDelete.mutate({id: rowSelected, token: user?.access_token}, {
+      onSettled: () => {
+        queryProduct.refetch()
+      }
+    })
+  }
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setStateProductDetails({
+      name: "",
+      price: "",
+      description: "",
+      rating: "",
+      image: "",
+      type: "",
+      countInStock: "",
+    })
+    form.resetFields();
+  };
+  useEffect(() => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       message.success();
-      handleCancel();
+      handleCloseDrawer();
     } else if (dataUpdated?.status === "ERR") {
       message.error();
     }
   }, [isSuccessUpdated]);
-  const handleCancel = () => {
-    setIsModalOpen(false);
-    form.resetFields();
-  };
+  const handleCloseDrawer = () => {
+    setIsOpenDrawer(false)
+    setStateProductDetails({
+      name: "",
+      price: "",
+      description: "",
+      rating: "",
+      image: "",
+      type: "",
+      countInStock: "",
+    })
+    form.resetFields()
+
+  }
+
   const onFinish = () => {
-    mutation.mutate(stateProduct);
+    mutation.mutate(stateProduct, {
+      onSettled: () => {
+        queryProduct.refetch()
+      }
+    });
   };
   const handleOnchange = (e) => {
-    settStateProduct({
+    setStateProduct({
       ...stateProduct,
       [e.target.name]: e.target.value,
     });
@@ -201,11 +400,12 @@ const AdminProduct = () => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
-    settStateProduct({
+    setStateProduct({
       ...stateProduct,
       image: file.preview,
     });
   };
+
   const handleOnchangeImageDetails = async ({ fileList }) => {
     const file = fileList[0];
     if (!file.url && !file.preview) {
@@ -217,7 +417,11 @@ const AdminProduct = () => {
     });
   };
   const onUpdateProduct = () => {
-    mutationUpdate.mutate({id: rowSelected, token: user?.access_token, ...stateProductDetails})
+    mutationUpdate.mutate({id: rowSelected, token: user?.access_token, ...stateProductDetails},{
+      onSettled: () => {
+        queryProduct.refetch()
+      }
+    })
   }
   return (
     <div>
@@ -235,7 +439,7 @@ const AdminProduct = () => {
           <PlusOutlined style={{ fontSize: "60px" }} />
         </Button>
       </div>
-      <div style={{ marginTop: "20px" }}>
+      <div style={{ marginTop: "20px", marginBottom: "50px" }}>
         <TableComponent
           columns={columns}
           isPending={isPendingProduct}
@@ -249,7 +453,7 @@ const AdminProduct = () => {
           }}
         />
       </div>
-      <Modal
+      <ModalComponent
         title="Tạo sản phẩm"
         open={isModalOpen}
         onCancel={handleCancel}
@@ -261,12 +465,12 @@ const AdminProduct = () => {
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
             onFinish={onFinish}
-            autoComplete="off"
+            autoComplete="on"
             form={form}
           >
             <Form.Item
               label="Tên sản phẩm"
-              name="Name"
+              name="name"
               rules={[
                 { required: true, message: "Vui lòng nhập tên sản phẩm!" },
               ]}
@@ -280,7 +484,7 @@ const AdminProduct = () => {
 
             <Form.Item
               label="Loại"
-              name="Type"
+              name="type"
               rules={[{ required: true, message: "Vui lòng nhập loại!" }]}
             >
               <InputComponent
@@ -344,7 +548,9 @@ const AdminProduct = () => {
               name="image"
               rules={[{ required: true, message: "Vui lòng thêm ảnh!" }]}
             >
-              <WrapperUploadFile onChange={handleOnchangeImage} maxCount={1}>
+              <WrapperUploadFile fileList={stateProduct?.image ? [{ url: stateProduct?.image }] : []}
+               onChange={handleOnchangeImage}
+                maxCount={1}>
                 <Button>Select File</Button>
                 {stateProduct?.image && (
                   <img
@@ -372,18 +578,18 @@ const AdminProduct = () => {
             </Form.Item>
           </Form>
         </Loading>
-      </Modal>
+      </ModalComponent>
 
     {/* update san pham */}
 
       <DrawerComponent title="Chi tiết sản phẩm" isOpen={isOpenDrawer} onClose={() => setIsOpenDrawer(false)} width = "90%">
-      <Loading isPending={isPendingUpdate}>
+      <Loading isPending={isPendingUpdate || isPendingUpdated}>
           <Form
             name="basic"
             labelCol={{ span: 2 }}
             wrapperCol={{ span: 22 }}
             onFinish={onUpdateProduct}
-            autoComplete="off"
+            autoComplete="on"
             form={form}
           >
             <Form.Item
@@ -466,7 +672,10 @@ const AdminProduct = () => {
               name="image"
               rules={[{ required: true, message: "Vui lòng thêm ảnh!" }]}
             >
-              <WrapperUploadFile onChange={handleOnchangeImageDetails} maxCount={1}>
+              <WrapperUploadFile
+              fileList={stateProductDetails?.image ? [{ url: stateProductDetails?.image }] : []}
+               onChange={handleOnchangeImageDetails}
+                maxCount={1}>
                 <Button>Select File</Button>
                 {stateProductDetails?.image && (
                   <img
@@ -495,6 +704,18 @@ const AdminProduct = () => {
           </Form>
         </Loading>
       </DrawerComponent>
+      {/* xoa san pham */}
+
+      <ModalComponent
+        title="Xóa sản phẩm"
+        open={isModalOpenDelete}
+        onCancel={handleCancelDelete}
+        onOk={handleDeleteProduct}
+      >
+        <Loading isPending={isPendingDeleted}>
+          <div> Bạn có chắc xóa sản phẩm này không?</div>
+        </Loading>
+      </ModalComponent>
     </div>
   );
 };
