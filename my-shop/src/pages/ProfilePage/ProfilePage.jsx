@@ -47,7 +47,6 @@ const ProfilePage = () => {
   useEffect(() => {
     if (isSuccess) {
         message.success()
-        window.location.reload();
         handleGetDetailUser(user?.id, user?.access_token)
     } else if (isError) {
         message.error()
