@@ -22,8 +22,6 @@ const AdminProduct = () => {
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
   const user = useSelector((state) => state?.user)
 
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
   const [stateProduct, setStateProduct] = useState({
     name: "",
@@ -70,11 +68,13 @@ const AdminProduct = () => {
   const mutationUpdate = useMutationHooks((data) => {
     const {
       id,
-      token
+      token,
+      ...rests
     } = data;
     const res = ProductService.updateProduct(
       id,
-      token);
+      token, 
+    {...rests});
     return res;
   });
 
@@ -82,12 +82,10 @@ const AdminProduct = () => {
     const {
       id,
       token,
-      ...rests
     } = data;
     const res = ProductService.deleteProduct(
       id,
-      token,
-      { ...rests });
+      token);
     return res;
   });
   const getAllProducts = async () => {
@@ -148,6 +146,7 @@ const AdminProduct = () => {
       </div>
     );
   };
+  //tim kiem
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -159,7 +158,6 @@ const AdminProduct = () => {
     // setSearchText('');
   };
 
- //tim kiem
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
@@ -243,6 +241,8 @@ const AdminProduct = () => {
     //   ),
   });
 
+ // ---
+
   const columns = [
     {
       title: "Tên sản phẩm",
@@ -307,11 +307,10 @@ const AdminProduct = () => {
       render: renderAction,
     },
   ];
-  const dataTable =
-    products?.data?.length &&
-    products?.data?.map((product) => {
-      return { ...product, key: product._id };
-    });
+
+  const dataTable = products?.data?.length && products?.data?.map((product) => {
+    return { ...product, key: product._id }
+  })
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {
       message.success();
@@ -320,6 +319,15 @@ const AdminProduct = () => {
       message.error();
     }
   }, [isSuccess]);
+  
+  useEffect(() => {
+    if (isSuccessUpdated && dataUpdated?.status === "OK") {
+      message.success();
+      handleCloseDrawer();
+    } else if (dataUpdated?.status === "ERR") {
+      message.error();
+    }
+  }, [isSuccessUpdated]);
 
   useEffect(() => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
@@ -342,7 +350,7 @@ const AdminProduct = () => {
   }
   const handleCancel = () => {
     setIsModalOpen(false);
-    setStateProductDetails({
+    setStateProduct({
       name: "",
       price: "",
       description: "",
@@ -353,14 +361,6 @@ const AdminProduct = () => {
     })
     form.resetFields();
   };
-  useEffect(() => {
-    if (isSuccessUpdated && dataUpdated?.status === "OK") {
-      message.success();
-      handleCloseDrawer();
-    } else if (dataUpdated?.status === "ERR") {
-      message.error();
-    }
-  }, [isSuccessUpdated]);
   const handleCloseDrawer = () => {
     setIsOpenDrawer(false)
     setStateProductDetails({
@@ -446,14 +446,15 @@ const AdminProduct = () => {
           data={dataTable}
           onRow={(record, rowIndex) => {
             return {
-              onClick: (event) => {
-                setRowSelected(record?._id);
+              onClick:(event) => {
+                setRowSelected(record._id);
               },
             };
           }}
         />
       </div>
       <ModalComponent
+        forceRender
         title="Tạo sản phẩm"
         open={isModalOpen}
         onCancel={handleCancel}
@@ -476,7 +477,7 @@ const AdminProduct = () => {
               ]}
             >
               <InputComponent
-                value={stateProduct.name}
+                value={stateProduct["name"]}
                 onChange={handleOnchange}
                 name="name"
               />
@@ -600,7 +601,7 @@ const AdminProduct = () => {
               ]}
             >
               <InputComponent
-                value={stateProductDetails.name}
+                value={stateProductDetails['name']}
                 onChange={handleOnchangeDetails}
                 name="name"
               />
