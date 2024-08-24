@@ -88,6 +88,17 @@ const AdminProduct = () => {
       token);
     return res;
   });
+  const mutationDeleteMany = useMutationHooks((data) => {
+    const {
+      token,
+      ...ids
+    } = data;
+    const res = ProductService.deleteManyProduct(
+      ids,
+      token);
+    return res;
+  });
+
   const getAllProducts = async () => {
     const res = await ProductService.getAllProduct();
     return res;
@@ -114,11 +125,11 @@ const AdminProduct = () => {
   
 
   useEffect(() => {
-    if(rowSelected) {
+    if(rowSelected && isOpenDrawer) {
       setIsPendingUpdate(true)
       fetchGetDetailsProduct(rowSelected)
     }
-  }, [rowSelected])
+  }, [rowSelected, isOpenDrawer])
   const handleDetailsProduct = () => {
     setIsOpenDrawer(true)
   }
@@ -126,6 +137,7 @@ const AdminProduct = () => {
   const { data, isPending, isSuccess, isError } = mutation;
   const { data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated } = mutationUpdate;
   const { data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorDeleted } = mutationDelete;
+  const { data: dataDeletedMany, isPending: isPendingDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorDeletedMany } = mutationDeleteMany;
 
   const queryProduct = useQuery({
     queryKey: ["products"],
@@ -313,9 +325,10 @@ const AdminProduct = () => {
   })
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {
+      console.log('isSuccess', isSuccess)
       message.success();
       handleCancel();
-    } else if (data?.status === "ERR") {
+    } else if (isError) {
       message.error();
     }
   }, [isSuccess]);
@@ -324,7 +337,7 @@ const AdminProduct = () => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       message.success();
       handleCloseDrawer();
-    } else if (dataUpdated?.status === "ERR") {
+    } else if (isErrorUpdated) {
       message.error();
     }
   }, [isSuccessUpdated]);
@@ -333,16 +346,30 @@ const AdminProduct = () => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
       message.success();
       handleCancelDelete();
-    } else if (dataDeleted?.status === "ERR") {
+    } else if (isErrorDeleted) {
       message.error();
     }
   }, [isSuccessDeleted]);
+  useEffect(() => {
+    if (isSuccessDeletedMany && dataDeletedMany?.status === "OK") {
+      message.success();
+    } else if (isErrorDeleted) {
+      message.error();
+    }
+  }, [isSuccessDeletedMany]);
   
   const handleCancelDelete = () => {
     setIsModalOpenDelete(false)
   }
   const handleDeleteProduct = () => {
     mutationDelete.mutate({id: rowSelected, token: user?.access_token}, {
+      onSettled: () => {
+        queryProduct.refetch()
+      }
+    })
+  }
+  const handleDeleteManyProduct = (ids) => {
+    mutationDeleteMany.mutate({ids: ids, token: user?.access_token}, {
       onSettled: () => {
         queryProduct.refetch()
       }
@@ -441,6 +468,7 @@ const AdminProduct = () => {
       </div>
       <div style={{ marginTop: "20px", marginBottom: "50px" }}>
         <TableComponent
+          handleDeleteMany={handleDeleteManyProduct}
           columns={columns}
           isPending={isPendingProduct}
           data={dataTable}

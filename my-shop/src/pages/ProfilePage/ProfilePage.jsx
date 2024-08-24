@@ -29,7 +29,7 @@ const ProfilePage = () => {
   const mutation = useMutationHooks(
     (data) => {
         const { id, access_token, ...rests} = data
-        UserService.updateUser(id, rests, access_token )
+        UserService.updateUser(id, access_token, rests )
     }
   )
 
@@ -202,12 +202,6 @@ const handleGetDetailUser = async (id, token) => {
                     objectFit: 'cover'
                 }} alt="avatar"/>
             )}
-            {/* <InputForm
-                id="avatar"
-                style={{ width: "300px" }}
-                value={avatar}
-                onChange={handleOnchangePhone}
-            /> */}
             <ButtonComponent
                 onClick={handleUpdate}
                 size={40}

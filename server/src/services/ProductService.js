@@ -37,9 +37,10 @@ const updateProduct = (id, data) => {
             const checkProduct = await Product.findOne({
                 _id: id
             })
+
             if(checkProduct === null){
                 resolve({
-                    status: 'OK',
+                    status: 'ERR',
                     message: 'The product is not defined'
                 })
             }
@@ -155,11 +156,27 @@ const getDetailsProduct = (id) => {
         }
     })
 }
+const deleteManyProduct = (ids) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await Product.deleteMany({_id: ids})
+            resolve({
+                status: 'OK',
+                message: 'Delete products success',
+            })
+            
+
+        } catch(e) {
+            reject(e)
+        }
+    })
+}
 
 module.exports = {
     createProduct,
     updateProduct,
     getDetailsProduct,
     getAllProduct,
-    deleteProduct
+    deleteProduct,
+    deleteManyProduct
 }

@@ -62,6 +62,16 @@ const AdminUser = () => {
         );
     return res;
   });
+  const mutationDeleteMany = useMutationHooks((data) => {
+    const {
+      token,
+      ...ids
+    } = data;
+    const res = UserService.deleteManyUser(
+      ids,
+      token);
+    return res;
+  });
   const getAllUsers = async () => {
     const res = await UserService.getAllUser();
     return res;
@@ -85,17 +95,18 @@ const AdminUser = () => {
   
 
   useEffect(() => {
-    if(rowSelected) {
+    if(rowSelected && isOpenDrawer) {
       setIsPendingUpdate(true)
       fetchGetDetailsUser(rowSelected)
     }
-  }, [rowSelected])
+  }, [rowSelected, isOpenDrawer])
   const handleDetailsProduct = () => {
     setIsOpenDrawer(true)
   }
 
   const { data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated } = mutationUpdate;
   const { data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorDeleted } = mutationDelete;
+  const { data: dataDeletedMany, isPending: isPendingDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorDeletedMany } = mutationDeleteMany;
 
   const queryUser = useQuery({
     queryKey: ["users"],
@@ -195,20 +206,6 @@ const AdminUser = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-    // render: (text) =>
-    //   searchedColumn === dataIndex ? (
-    //     // <Highlighter
-    //     //   highlightStyle={{
-    //     //     backgroundColor: '#ffc069',
-    //     //     padding: 0,
-    //     //   }}
-    //     //   searchWords={[searchText]}
-    //     //   autoEscape
-    //     //   textToHighlight={text ? text.toString() : ''}
-    //     // />
-    //   ) : (
-    //     text
-    //   ),
   });
 
  // ---
@@ -262,7 +259,7 @@ const AdminUser = () => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       message.success();
       handleCloseDrawer();
-    } else if (dataUpdated?.status === "ERR") {
+    } else if (isErrorUpdated) {
       message.error();
     }
   }, [isSuccessUpdated]);
@@ -271,10 +268,18 @@ const AdminUser = () => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
       message.success();
       handleCancelDelete();
-    } else if (dataDeleted?.status === "ERR") {
+    } else if (isErrorDeleted) {
       message.error();
     }
   }, [isSuccessDeleted]);
+
+  useEffect(() => {
+    if (isSuccessDeletedMany && dataDeletedMany?.status === "OK") {
+      message.success();
+    } else if (isErrorDeletedMany) {
+      message.error();
+    }
+  }, [isSuccessDeletedMany]);
   
   const handleCancelDelete = () => {
     setIsModalOpenDelete(false)
@@ -286,6 +291,13 @@ const AdminUser = () => {
       }
     })
   };
+  const handleDeleteManyUser = (ids) => {
+    mutationDeleteMany.mutate({ids: ids, token: user?.access_token}, {
+      onSettled: () => {
+        queryUser.refetch()
+      }
+    })
+  }
   const handleCloseDrawer = () => {
     setIsOpenDrawer(false)
     setStateUserDetails({
@@ -343,6 +355,7 @@ const AdminUser = () => {
       <WrapperHeader>Quản lý người dùng</WrapperHeader>
       <div style={{ marginTop: "20px", marginBottom: "50px" }}>
         <TableComponent
+        handleDeleteMany={handleDeleteManyUser}
           columns={columns}
           isPending={isPendingUsers}
           data={dataTable}
@@ -389,7 +402,7 @@ const AdminUser = () => {
             </Form.Item>
 
             <Form.Item
-              label="Loại"
+              label="Email"
               name="email"
               rules={[{ required: true, message: "Vui lòng nhập email!" }]}
             >
