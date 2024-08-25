@@ -96,7 +96,7 @@ const getAllProduct = ( limit, page, sort, filter ) => {
                 data: allProduct,
                 total: totalProduct,
                 pageCurrent: Number(page + 1),
-                totalPage: Math.ceil( totalProduct/limit )
+                totalPage: Math.ceil(totalProduct / limit )
             })
             
 
@@ -105,6 +105,7 @@ const getAllProduct = ( limit, page, sort, filter ) => {
         }
     })
 }
+
 
 const deleteProduct = (id) => {
     return new Promise(async (resolve, reject) => {

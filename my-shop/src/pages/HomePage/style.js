@@ -20,6 +20,7 @@ export const WrapperButtonMore = styled(ButtonComponent)`
     background: #fff;
     width: 100%;
     text-align: center;
+    cursor: ${(props) => props.disabled ? "not-allowed" : "pointer"}
 `
 export const WrapperProduct = styled.div`
     display: flex;
