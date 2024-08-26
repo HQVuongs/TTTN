@@ -1,10 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { WrapperHeader } from "./style";
-import { Button, Form, Space } from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
+import { Button, Form, Select, Space } from "antd";
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import TableComponent from "../TableComponent/TableComponent";
 import InputComponent from "../InputComponent/InputComponent";
-import { getBase64 } from "../../utils";
+import { getBase64, renderOptions } from "../../utils";
 import { WrapperUploadFile } from "./style";
 import * as ProductService from "../../services/ProductService";
 import { useMutationHooks } from "../../hooks/userMutationHook";
@@ -20,7 +25,8 @@ const AdminProduct = () => {
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const [isPendingUpdate, setIsPendingUpdate] = useState(false);
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
-  const user = useSelector((state) => state?.user)
+  const [typeSelect, setTypeSelect] = useState("")
+  const user = useSelector((state) => state?.user);
 
   const searchInput = useRef(null);
   const [stateProduct, setStateProduct] = useState({
@@ -31,6 +37,7 @@ const AdminProduct = () => {
     image: "",
     type: "",
     countInStock: "",
+    newType: ""
   });
   const [stateProductDetails, setStateProductDetails] = useState({
     name: "",
@@ -44,15 +51,8 @@ const AdminProduct = () => {
 
   const [form] = Form.useForm();
   const mutation = useMutationHooks((data) => {
-    const {
-      name,
-      price,
-      description,
-      rating,
-      image,
-      type,
-      countInStock,
-    } = data;
+    const { name, price, description, rating, image, type, countInStock } =
+      data;
     const res = ProductService.createProduct({
       name,
       price,
@@ -66,36 +66,19 @@ const AdminProduct = () => {
   });
 
   const mutationUpdate = useMutationHooks((data) => {
-    const {
-      id,
-      token,
-      ...rests
-    } = data;
-    const res = ProductService.updateProduct(
-      id,
-      token, 
-    {...rests});
+    const { id, token, ...rests } = data;
+    const res = ProductService.updateProduct(id, token, { ...rests });
     return res;
   });
 
   const mutationDelete = useMutationHooks((data) => {
-    const {
-      id,
-      token,
-    } = data;
-    const res = ProductService.deleteProduct(
-      id,
-      token);
+    const { id, token } = data;
+    const res = ProductService.deleteProduct(id, token);
     return res;
   });
   const mutationDeleteMany = useMutationHooks((data) => {
-    const {
-      token,
-      ...ids
-    } = data;
-    const res = ProductService.deleteManyProduct(
-      ids,
-      token);
+    const { token, ...ids } = data;
+    const res = ProductService.deleteManyProduct(ids, token);
     return res;
   });
 
@@ -104,8 +87,8 @@ const AdminProduct = () => {
     return res;
   };
   const fetchGetDetailsProduct = async (rowSelected) => {
-    const res = await ProductService.getDetailsProduct(rowSelected)
-    if(res?.data) {
+    const res = await ProductService.getDetailsProduct(rowSelected);
+    if (res?.data) {
       setStateProductDetails({
         name: res?.data?.name,
         price: res?.data?.price,
@@ -114,36 +97,58 @@ const AdminProduct = () => {
         image: res?.data?.image,
         type: res?.data?.type,
         countInStock: res?.data?.countInStock,
-      })
+      });
     }
-    setIsPendingUpdate(false)
+    setIsPendingUpdate(false);
+  };
+  const fetchAllTypeProduct = async () => {
+    const res = await ProductService.getAllTypeProduct()
+    return res
   }
 
   useEffect(() => {
-    form.setFieldsValue(stateProductDetails)
-  }, [form, stateProductDetails])
-  
+    form.setFieldsValue(stateProductDetails);
+  }, [form, stateProductDetails]);
 
   useEffect(() => {
-    if(rowSelected && isOpenDrawer) {
-      setIsPendingUpdate(true)
-      fetchGetDetailsProduct(rowSelected)
+    if (rowSelected && isOpenDrawer) {
+      setIsPendingUpdate(true);
+      fetchGetDetailsProduct(rowSelected);
     }
-  }, [rowSelected, isOpenDrawer])
+  }, [rowSelected, isOpenDrawer]);
   const handleDetailsProduct = () => {
-    setIsOpenDrawer(true)
-  }
+    setIsOpenDrawer(true);
+  };
 
   const { data, isPending, isSuccess, isError } = mutation;
-  const { data: dataUpdated, isPending: isPendingUpdated, isSuccess: isSuccessUpdated, isError: isErrorUpdated } = mutationUpdate;
-  const { data: dataDeleted, isPending: isPendingDeleted, isSuccess: isSuccessDeleted, isError: isErrorDeleted } = mutationDelete;
-  const { data: dataDeletedMany, isPending: isPendingDeletedMany, isSuccess: isSuccessDeletedMany, isError: isErrorDeletedMany } = mutationDeleteMany;
+  const {
+    data: dataUpdated,
+    isPending: isPendingUpdated,
+    isSuccess: isSuccessUpdated,
+    isError: isErrorUpdated,
+  } = mutationUpdate;
+  const {
+    data: dataDeleted,
+    isPending: isPendingDeleted,
+    isSuccess: isSuccessDeleted,
+    isError: isErrorDeleted,
+  } = mutationDelete;
+  const {
+    data: dataDeletedMany,
+    isPending: isPendingDeletedMany,
+    isSuccess: isSuccessDeletedMany,
+    isError: isErrorDeletedMany,
+  } = mutationDeleteMany;
 
   const queryProduct = useQuery({
     queryKey: ["products"],
     queryFn: getAllProducts,
   });
-  const { isPending: isPendingProduct, data: products } = queryProduct
+  const typeProduct = useQuery({
+    queryKey: ["type-product"],
+    queryFn: fetchAllTypeProduct,
+  });
+  const { isPending: isPendingProduct, data: products } = queryProduct;
   const renderAction = () => {
     return (
       <div>
@@ -170,9 +175,14 @@ const AdminProduct = () => {
     // setSearchText('');
   };
 
-
   const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+      close,
+    }) => (
       <div
         style={{
           padding: 8,
@@ -182,12 +192,14 @@ const AdminProduct = () => {
         <InputComponent
           ref={searchInput}
           placeholder={`Search ${dataIndex}`}
-          value={`${selectedKeys[0] || ''}`}
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          value={`${selectedKeys[0] || ""}`}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
           onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{
             marginBottom: 8,
-            display: 'block',
+            display: "block",
           }}
         />
         <Space>
@@ -226,7 +238,7 @@ const AdminProduct = () => {
     filterIcon: (filtered) => (
       <SearchOutlined
         style={{
-          color: filtered ? '#1890ff' : undefined,
+          color: filtered ? "#1890ff" : undefined,
         }}
       />
     ),
@@ -253,61 +265,59 @@ const AdminProduct = () => {
     //   ),
   });
 
- // ---
+  // ---
 
   const columns = [
     {
       title: "Tên sản phẩm",
       dataIndex: "name",
       render: (text) => <a>{text}</a>,
-      sorter: (a,b) => a.name.length - b.name.length,
-      ...getColumnSearchProps("name")
+      sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),
     },
     {
       title: "Giá",
       dataIndex: "price",
-      sorter: (a,b) => a.price - b.price,
+      sorter: (a, b) => a.price - b.price,
       filters: [
         {
-          text: 'giá từ 50 trở lên',
-          value: '>=',
+          text: "giá từ 50 trở lên",
+          value: ">=",
         },
         {
-          text: 'giá từ 50 trở xuống',
-          value: '<=',
+          text: "giá từ 50 trở xuống",
+          value: "<=",
         },
       ],
       onFilter: (value, record) => {
-        if(value === ">=") {
-        return record.price >= 50
+        if (value === ">=") {
+          return record.price >= 50;
         }
 
-        return record.price <=50
-        
-      }
+        return record.price <= 50;
+      },
     },
     {
       title: "Chất lượng",
       dataIndex: "rating",
-      sorter: (a,b) => a.rating - b.rating,
+      sorter: (a, b) => a.rating - b.rating,
       filters: [
         {
-          text: '3 sao trở lên',
-          value: '>=',
+          text: "3 sao trở lên",
+          value: ">=",
         },
         {
-          text: '3 sao trở xuống',
-          value: '<=',
+          text: "3 sao trở xuống",
+          value: "<=",
         },
       ],
       onFilter: (value, record) => {
-        if(value === ">=") {
-        return record.rating >= 3
+        if (value === ">=") {
+          return record.rating >= 3;
         }
 
-        return record.rating <=3
-        
-      }
+        return record.rating <= 3;
+      },
     },
     {
       title: "Loại",
@@ -320,19 +330,20 @@ const AdminProduct = () => {
     },
   ];
 
-  const dataTable = products?.data?.length && products?.data?.map((product) => {
-    return { ...product, key: product._id }
-  })
+  const dataTable =
+    products?.data?.length &&
+    products?.data?.map((product) => {
+      return { ...product, key: product._id };
+    });
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {
-      console.log('isSuccess', isSuccess)
       message.success();
       handleCancel();
     } else if (isError) {
       message.error();
     }
   }, [isSuccess]);
-  
+
   useEffect(() => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       message.success();
@@ -357,24 +368,30 @@ const AdminProduct = () => {
       message.error();
     }
   }, [isSuccessDeletedMany]);
-  
+
   const handleCancelDelete = () => {
-    setIsModalOpenDelete(false)
-  }
+    setIsModalOpenDelete(false);
+  };
   const handleDeleteProduct = () => {
-    mutationDelete.mutate({id: rowSelected, token: user?.access_token}, {
-      onSettled: () => {
-        queryProduct.refetch()
+    mutationDelete.mutate(
+      { id: rowSelected, token: user?.access_token },
+      {
+        onSettled: () => {
+          queryProduct.refetch();
+        },
       }
-    })
-  }
+    );
+  };
   const handleDeleteManyProduct = (ids) => {
-    mutationDeleteMany.mutate({ids: ids, token: user?.access_token}, {
-      onSettled: () => {
-        queryProduct.refetch()
+    mutationDeleteMany.mutate(
+      { ids: ids, token: user?.access_token },
+      {
+        onSettled: () => {
+          queryProduct.refetch();
+        },
       }
-    })
-  }
+    );
+  };
   const handleCancel = () => {
     setIsModalOpen(false);
     setStateProduct({
@@ -385,11 +402,11 @@ const AdminProduct = () => {
       image: "",
       type: "",
       countInStock: "",
-    })
+    });
     form.resetFields();
   };
   const handleCloseDrawer = () => {
-    setIsOpenDrawer(false)
+    setIsOpenDrawer(false);
     setStateProductDetails({
       name: "",
       price: "",
@@ -398,16 +415,24 @@ const AdminProduct = () => {
       image: "",
       type: "",
       countInStock: "",
-    })
-    form.resetFields()
-
-  }
+    });
+    form.resetFields();
+  };
 
   const onFinish = () => {
-    mutation.mutate(stateProduct, {
+    const params = {
+      name: stateProduct.name,
+      price: stateProduct.price,
+      description: stateProduct.description,
+      rating: stateProduct.rating,
+      image: stateProduct.type,
+      type: stateProduct.type === "add-type" ? stateProduct.newType : stateProduct.type,
+      countInStock: stateProduct.countInStock,
+    }
+    mutation.mutate(params, {
       onSettled: () => {
-        queryProduct.refetch()
-      }
+        queryProduct.refetch();
+      },
     });
   };
   const handleOnchange = (e) => {
@@ -444,12 +469,23 @@ const AdminProduct = () => {
     });
   };
   const onUpdateProduct = () => {
-    mutationUpdate.mutate({id: rowSelected, token: user?.access_token, ...stateProductDetails},{
-      onSettled: () => {
-        queryProduct.refetch()
+    mutationUpdate.mutate(
+      { id: rowSelected, token: user?.access_token, ...stateProductDetails },
+      {
+        onSettled: () => {
+          queryProduct.refetch();
+        },
       }
+    );
+  };
+
+  const handleChangeSelect = (value) => {
+    setStateProduct({
+      ...stateProduct,
+      type: value
     })
-  }
+}
+ console.log("state", stateProduct)
   return (
     <div>
       <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
@@ -474,7 +510,7 @@ const AdminProduct = () => {
           data={dataTable}
           onRow={(record, rowIndex) => {
             return {
-              onClick:(event) => {
+              onClick: (event) => {
                 setRowSelected(record._id);
               },
             };
@@ -514,14 +550,28 @@ const AdminProduct = () => {
             <Form.Item
               label="Loại"
               name="type"
-              rules={[{ required: true, message: "Vui lòng nhập loại!" }]}
+              
+              rules={[{ required: true, message: 'Vui lòng nhập loại!' }]}
             >
-              <InputComponent
-                value={stateProduct.type}
-                onChange={handleOnchange}
+              <Select
                 name="type"
-              />
+                style={{border: "2px solid", borderRadius: "7px"}}
+                // defaultValue="lucy"
+                // style={{ width: 120 }}
+                value={stateProduct.type}
+                onChange={handleChangeSelect}
+                options={renderOptions(typeProduct?.data?.data)}
+                />
             </Form.Item>
+            {stateProduct.type === "add-type" && (
+              <Form.Item
+                label="Thêm loại"
+                name="newType"
+                rules={[{ required: true, message: 'Please input your type!' }]}
+              >
+                <InputComponent value={stateProduct.newType} onChange={handleOnchange} name="newType" />
+              </Form.Item>
+            )}
             <Form.Item
               label="Số lượng"
               name="countInStock"
@@ -577,9 +627,13 @@ const AdminProduct = () => {
               name="image"
               rules={[{ required: true, message: "Vui lòng thêm ảnh!" }]}
             >
-              <WrapperUploadFile fileList={stateProduct?.image ? [{ url: stateProduct?.image }] : []}
-               onChange={handleOnchangeImage}
-                maxCount={1}>
+              <WrapperUploadFile
+                fileList={
+                  stateProduct?.image ? [{ url: stateProduct?.image }] : []
+                }
+                onChange={handleOnchangeImage}
+                maxCount={1}
+              >
                 <Button>Select File</Button>
                 {stateProduct?.image && (
                   <img
@@ -609,10 +663,15 @@ const AdminProduct = () => {
         </Loading>
       </ModalComponent>
 
-    {/* update san pham */}
+      {/* update san pham */}
 
-      <DrawerComponent title="Chi tiết sản phẩm" isOpen={isOpenDrawer} onClose={() => setIsOpenDrawer(false)} width = "90%">
-      <Loading isPending={isPendingUpdate || isPendingUpdated}>
+      <DrawerComponent
+        title="Chi tiết sản phẩm"
+        isOpen={isOpenDrawer}
+        onClose={() => setIsOpenDrawer(false)}
+        width="90%"
+      >
+        <Loading isPending={isPendingUpdate || isPendingUpdated}>
           <Form
             name="basic"
             labelCol={{ span: 2 }}
@@ -629,7 +688,7 @@ const AdminProduct = () => {
               ]}
             >
               <InputComponent
-                value={stateProductDetails['name']}
+                value={stateProductDetails["name"]}
                 onChange={handleOnchangeDetails}
                 name="name"
               />
@@ -702,9 +761,14 @@ const AdminProduct = () => {
               rules={[{ required: true, message: "Vui lòng thêm ảnh!" }]}
             >
               <WrapperUploadFile
-              fileList={stateProductDetails?.image ? [{ url: stateProductDetails?.image }] : []}
-               onChange={handleOnchangeImageDetails}
-                maxCount={1}>
+                fileList={
+                  stateProductDetails?.image
+                    ? [{ url: stateProductDetails?.image }]
+                    : []
+                }
+                onChange={handleOnchangeImageDetails}
+                maxCount={1}
+              >
                 <Button>Select File</Button>
                 {stateProductDetails?.image && (
                   <img

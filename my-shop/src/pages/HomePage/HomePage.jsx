@@ -16,8 +16,9 @@ const HomePage = () => {
   const searchProduct= useSelector((state) => state?.product?.search)
   const searchDebounce = useDebounce(searchProduct, 1000)
   const [pending, setPending] = useState(false)
-  const [limit, setLimit] = useState(6)
-  const arr = ["Dao", "Keo", "Tu lanh"];
+  const [limit, setLimit] = useState(6);
+  const [typeProducts, setTypeProducts] = useState([])
+
   const fetchProductAll = async (context) => {
     const limit = context?.queryKey && context?.queryKey[1]
     const search = context?.queryKey && context?.queryKey[2]
@@ -26,6 +27,12 @@ const HomePage = () => {
     return res
 
   }
+  const fetchAllTypeProduct = async () => {
+    const res = await ProductService.getAllTypeProduct()
+    if(res?.status === "OK"){
+      setTypeProducts(res?.data)
+    }
+  }
   const { isPending, data: products, isPlaceholderData} = useQuery({
     queryKey: ["products", limit, searchDebounce],
     queryFn: fetchProductAll,
@@ -33,12 +40,15 @@ const HomePage = () => {
     retryDelay: 1000,
     placeholderData: keepPreviousData 
   });
+  useEffect(() => {
+    fetchAllTypeProduct()
+  }, [])
   const isDisabled = products?.total === products?.data?.length || products?.totalPage === 1;
   return (
     <Loading isPending={isPending || pending}>
       <div style={{ width: "1270px", margin: "0 auto" }}>
         <WrapperTypeProduct>
-          {arr.map((item) => {
+          {typeProducts.map((item) => {
             return <TypeProduct name={item} key={item} />;
           })}
         </WrapperTypeProduct>

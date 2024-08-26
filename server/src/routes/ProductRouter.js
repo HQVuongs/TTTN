@@ -9,5 +9,5 @@ router.get('/get-details/:id', ProductController.getDetailsProduct)
 router.get('/get-all', ProductController.getAllProduct)
 router.delete('/delete/:id', ProductController.deleteProduct)
 router.post('/delete-many', authMiddleWare, ProductController.deleteMany)
-
+router.get('/get-all-type', ProductController.getAllType)
 module.exports = router
