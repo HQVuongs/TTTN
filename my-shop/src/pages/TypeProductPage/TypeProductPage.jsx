@@ -16,7 +16,7 @@ const TypeProductPage = () => {
   const [pending, setPending] = useState(false);
   const searchDebounce = useDebounce(searchProduct, 500)
   const [panigate, setPanigate] = useState({
-    page: 1,
+    page: 0,
     limit: 8,
     total: 0,
   })
@@ -78,7 +78,7 @@ const TypeProductPage = () => {
                 )
               })}
             </WrapperProducts>
-            <Pagination defaultCurrent={panigate.page} total={panigate?.total} pageSize={panigate?.limit} onChange={onChange} style={{ display: 'flex', justifyContent: 'center', marginTop: '10px'}} />
+            <Pagination defaultCurrent={panigate.page + 1} total={panigate?.total} pageSize={panigate?.limit} onChange={onChange} style={{ display: 'flex', justifyContent: 'center', marginTop: '10px'}} />
           </Col>
       </Row>
     </div>
