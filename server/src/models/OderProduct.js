@@ -2,7 +2,7 @@ const mongoose = required("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    oderItems: [
+    orderItems: [
       {
         name: { type: String, required: true },
         amount: { type: Number, required: true },

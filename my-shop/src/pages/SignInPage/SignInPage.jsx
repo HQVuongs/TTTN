@@ -9,7 +9,7 @@ import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import imageLogo from "../../assets/images/logo-login.png";
 import { Image } from "antd";
 import { EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import * as UserService from "../../services/UserService"
 import { useMutationHooks } from "../../hooks/userMutationHook";
 import Loading from "../../components/LoadingComponent/Loading";
@@ -24,6 +24,7 @@ const SignInPage = () => {
   const  [email, setEmail] = useState('');
   const  [password, setPassword] = useState('');
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const mutation = useMutationHooks(
     data => UserService.loginUser(data)
@@ -34,9 +35,14 @@ const SignInPage = () => {
   //can xem lai
 
   useEffect(() => {
+    
     if(isSuccess && data?.status !== 'ERR') {
       message.success()
-      navigate('/')
+      if(location?.state){
+        navigate(location?.state)
+      } else {
+        navigate('/')
+      }
       localStorage.setItem('access_token', JSON.stringify(data?.access_token))
       if(data?.access_token) {
         const decoded = jwtDecode(data?.access_token)
