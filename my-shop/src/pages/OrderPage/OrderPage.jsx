@@ -1,5 +1,5 @@
 import { Form } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import InputComponent from "../../components/InputComponent/InputComponent";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
 import Loading from "../../components/LoadingComponent/Loading";
@@ -24,22 +24,37 @@ import {
   increaseAmount,
   removeAllOrderProduct,
   removeOrderProduct,
+  selectedOrder,
 } from "../../redux/slides/orderSlide";
-
+import { convertPrice } from "../../utils";
+import { useMutationHooks } from "../../hooks/userMutationHook";
+import * as UserService from "../../services/UserService";
+import * as message from "../../components/Message/Message";
+import { updateUser } from "../../redux/slides/userSlide";
 const OrderPage = () => {
   const order = useSelector((state) => state.order);
+  const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const [listChecked, setListChecked] = useState([])
+  const [listChecked, setListChecked] = useState([]);
+  const [isOpenModalUpdateInfor, setIsOpenModalUpdateInfor] = useState(false);
+  const [stateUserDetails, setStateUserDetails] = useState({
+    name: "",
+    phone: "",
+    address: "",
+    city: "",
+  });
+  const [form] = Form.useForm();
   const onChange = (e) => {
-    console.log(`checked = ${e.target.value}`)
-    if(listChecked.includes(e.target.value)){
-      const newListChecked = listChecked.filter((item) => item !== e.target.value)
-      setListChecked(newListChecked)
-    }else {
-      setListChecked([...listChecked, e.target.value])
+    if (listChecked.includes(e.target.value)) {
+      const newListChecked = listChecked.filter(
+        (item) => item !== e.target.value
+      );
+      setListChecked(newListChecked);
+    } else {
+      setListChecked([...listChecked, e.target.value]);
     }
-  }
-  console.log('listChecked', listChecked)
+  };
+
   const handleChangeCount = (type, idProduct) => {
     if (type === "increase") {
       dispatch(increaseAmount({ idProduct }));
@@ -51,24 +66,111 @@ const OrderPage = () => {
     dispatch(removeOrderProduct({ idProduct }));
   };
   const handleOnChangeCheckAll = (e) => {
-    console.log('e.target', e.target.checked)
-    if(e.target.checked){
-      const newListChecked = []
-       order?.orderItems?.forEach((item) => {
-        newListChecked.push(item?.product)
-        
+    console.log("e.target", e.target.checked);
+    if (e.target.checked) {
+      const newListChecked = [];
+      order?.orderItems?.forEach((item) => {
+        newListChecked.push(item?.product);
       });
-      setListChecked(newListChecked)
-    }else {
-      setListChecked([])
+      setListChecked(newListChecked);
+    } else {
+      setListChecked([]);
     }
-  }
-  const handleRemoveAllOrder = () =>{
-    if(listChecked?.length > 1){
-      dispatch(removeAllOrderProduct({listChecked}))
-
+  };
+  useEffect(() => {
+    dispatch(selectedOrder({ listChecked }));
+  }, [listChecked]);
+  useEffect(() => {
+    form.setFieldsValue(stateUserDetails);
+  }, [form, stateUserDetails]);
+  useEffect(() => {
+    if (isOpenModalUpdateInfor) {
+      setStateUserDetails({
+        ...stateUserDetails,
+        city: user?.city,
+        name: user?.name,
+        address: user?.address,
+        phone: user?.phone,
+      });
     }
-  }
+  }, [isOpenModalUpdateInfor]);
+  const handleRemoveAllOrder = () => {
+    if (listChecked?.length > 1) {
+      dispatch(removeAllOrderProduct({ listChecked }));
+    }
+  };
+  const priceMemo = useMemo(() => {
+    const result = order?.orderItemsSelected?.reduce((total, cur) => {
+      return total + cur.price * cur.amount;
+    }, 0);
+    return result;
+  }, [order]);
+  const priceDiscount = useMemo(() => {
+    const result = order?.orderItemsSelected?.reduce((total, cur) => {
+      return total + cur.discount * cur.amount;
+    }, 0);
+    if (Number(result)) {
+      return result;
+    }
+    return 0;
+  }, [order]);
+  const diliveryPriceMemo = useMemo(() => {
+    if (priceMemo > 200000) {
+      return 10000;
+    } else if (priceMemo === 0) {
+      return 0;
+    } else {
+      return 20000;
+    }
+  }, [priceMemo]);
+  const totalPriceMemo = useMemo(() => {
+    return (
+      Number(priceMemo) - Number(priceDiscount) + Number(diliveryPriceMemo)
+    );
+  }, [priceMemo, priceDiscount, diliveryPriceMemo]);
+  const handleAddCard = () => {
+    if (!order?.orderItemsSelected?.length) {
+      message.error("Vui lòng chọn sản phẩm");
+    } else if (user?.phone || !user?.address || user?.name || !user?.city) {
+      setIsOpenModalUpdateInfor(true);
+    }
+  };
+  const mutationUpdate = useMutationHooks((data) => {
+    const { id, token, ...rests } = data;
+    const res = UserService.updateUser(id, token, { ...rests });
+    return res;
+  });
+  const { isPending, data } = mutationUpdate;
+  const handleCancelUpdate = () => {
+    setStateUserDetails({
+      name: "",
+      city: "",
+      address: "",
+      phone: "",
+    });
+    form.resetFields();
+    setIsOpenModalUpdateInfor(false);
+  };
+  const handleUpdateInforUser = () => {
+    const { name, address, city, phone } = stateUserDetails;
+    if (name && address && city && phone) {
+      mutationUpdate.mutate(
+        { id: user?.id, token: user?.access_token, ...stateUserDetails },
+        {
+          onSuccess: () => {
+            dispatch(updateUser({name, address,city, phone}))
+            setIsOpenModalUpdateInfor(false);
+          },
+        }
+      );
+    }
+  };
+  const handleOnchangeDetails = (e) => {
+    setStateUserDetails({
+      ...stateUserDetails,
+      [e.target.name]: e.target.value,
+    });
+  };
   return (
     <div style={{ background: "#f5f5fa", width: "100%", height: "100vh" }}>
       <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
@@ -81,7 +183,10 @@ const OrderPage = () => {
             </WrapperStyleHeaderDilivery>
             <WrapperStyleHeader>
               <span style={{ display: "inline-block", width: "390px" }}>
-                <CustomCheckbox onChange={handleOnChangeCheckAll} checked={listChecked?.length === order?.orderItems?.length}/>
+                <CustomCheckbox
+                  onChange={handleOnChangeCheckAll}
+                  checked={listChecked?.length === order?.orderItems?.length}
+                />
                 <span> Tất cả ({order?.orderItems?.length} sản phẩm)</span>
               </span>
               <div
@@ -95,7 +200,10 @@ const OrderPage = () => {
                 <span>Đơn giá</span>
                 <span>Số lượng</span>
                 <span>Thành tiền</span>
-                <DeleteOutlined style={{ cursor: "pointer" }} onClick={handleRemoveAllOrder} />
+                <DeleteOutlined
+                  style={{ cursor: "pointer" }}
+                  onClick={handleRemoveAllOrder}
+                />
               </div>
             </WrapperStyleHeader>
             <WrapperListOrder>
@@ -110,14 +218,19 @@ const OrderPage = () => {
                         gap: 4,
                       }}
                     >
-                      <CustomCheckbox onChange={onChange} value={order.product} checked={listChecked.includes(order?.product)} />
+                      <CustomCheckbox
+                        onChange={onChange}
+                        value={order.product}
+                        checked={listChecked.includes(order?.product)}
+                      />
                       <img
                         src={order?.image}
                         style={{
                           width: "77px",
                           height: "79px",
                           objectFit: "cover",
-                        }} alt="imageProductSmall"
+                        }}
+                        alt="imageProductSmall"
                       />
                       <div
                         style={{
@@ -138,7 +251,7 @@ const OrderPage = () => {
                         justifyContent: "space-between",
                       }}
                     >
-                      <span>{order?.price.toLocaleString()} ₫</span>
+                      <span>{convertPrice(order?.price)} </span>
                       <WrapperCountOrder>
                         <button
                           style={{
@@ -180,7 +293,7 @@ const OrderPage = () => {
                           fontWeight: 500,
                         }}
                       >
-                        {(order?.price * order?.amount).toLocaleString()} ₫
+                        {convertPrice(order?.price * order?.amount)}
                       </span>
                       <DeleteOutlined
                         style={{ cursor: "pointer" }}
@@ -219,7 +332,7 @@ const OrderPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    0 ₫
+                    {convertPrice(priceMemo)}
                   </span>
                 </div>
                 <div
@@ -237,7 +350,7 @@ const OrderPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    0 ₫
+                    {`${priceDiscount} %`}
                   </span>
                 </div>
                 <div
@@ -255,7 +368,7 @@ const OrderPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    0 ₫
+                    {convertPrice(diliveryPriceMemo)}
                   </span>
                 </div>
               </WrapperInfo>
@@ -269,7 +382,7 @@ const OrderPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    0 ₫
+                    {convertPrice(totalPriceMemo)}
                   </span>
                   <span style={{ color: "#000", fontSize: "11px" }}>
                     (Đã bao gồm VAT nếu có)
@@ -278,6 +391,7 @@ const OrderPage = () => {
               </WrapperTotal>
             </div>
             <ButtonComponent
+              onClick={() => handleAddCard()}
               size={40}
               styleButton={{
                 background: "rgb(255, 57, 69)",
@@ -298,47 +412,63 @@ const OrderPage = () => {
       </div>
       <ModalComponent
         title="Cập nhật thông tin giao hàng"
-        open={false}
-        onCancel={() => {}}
-        onOk={() => {}}
+        open={isOpenModalUpdateInfor}
+        onCancel={handleCancelUpdate}
+        onOk={handleUpdateInforUser}
       >
-        <Loading isLoading={false}>
+        <Loading isPending={isPending}>
           <Form
             name="basic"
-            labelCol={{ span: 4 }}
-            wrapperCol={{ span: 20 }}
+            labelCol={{ span: 6 }}
+            wrapperCol={{ span: 22 }}
             autoComplete="on"
-            form={null}
+            form={form}
           >
             <Form.Item
-              label="Name"
+              label="Tên"
               name="name"
               rules={[{ required: true, message: "Please input your name!" }]}
             >
-              <InputComponent />
+              <InputComponent
+                value={stateUserDetails["name"]}
+                onChange={handleOnchangeDetails}
+                name="name"
+              />
             </Form.Item>
             <Form.Item
-              label="City"
+              label="Thành phố"
               name="city"
               rules={[{ required: true, message: "Please input your city!" }]}
             >
-              <InputComponent />
+              <InputComponent
+                value={stateUserDetails["city"]}
+                onChange={handleOnchangeDetails}
+                name="city"
+              />
             </Form.Item>
             <Form.Item
-              label="Phone"
+              label="Số điện thoại"
               name="phone"
               rules={[{ required: true, message: "Please input your phone!" }]}
             >
-              <InputComponent />
+              <InputComponent
+                value={stateUserDetails.phone}
+                onChange={handleOnchangeDetails}
+                name="phone"
+              />
             </Form.Item>
             <Form.Item
-              label="Address"
+              label="Địa chỉ"
               name="address"
               rules={[
                 { required: true, message: "Please input your address!" },
               ]}
             >
-              <InputComponent />
+              <InputComponent
+                value={stateUserDetails.address}
+                onChange={handleOnchangeDetails}
+                name="address"
+              />
             </Form.Item>
           </Form>
         </Loading>

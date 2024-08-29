@@ -56,7 +56,7 @@ const SignUpPage = () => {
 
   const handleSignUp = () => {
     mutation.mutate({ name, phone, email, password, confirmPassword })
-    console.log('sign-up', email, password, confirmPassword)
+    
   }
 
   const handleNavigateSignIn = () => {

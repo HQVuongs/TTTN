@@ -37,7 +37,8 @@ const AdminProduct = () => {
     image: "",
     type: "",
     countInStock: "",
-    newType: ""
+    newType: "",
+    discount: "",
   });
   const [stateProductDetails, setStateProductDetails] = useState({
     name: "",
@@ -47,11 +48,12 @@ const AdminProduct = () => {
     image: "",
     type: "",
     countInStock: "",
+    discount: "",
   });
 
   const [form] = Form.useForm();
   const mutation = useMutationHooks((data) => {
-    const { name, price, description, rating, image, type, countInStock } =
+    const { name, price, description, rating, image, type, countInStock, discount } =
       data;
     const res = ProductService.createProduct({
       name,
@@ -61,6 +63,7 @@ const AdminProduct = () => {
       image,
       type,
       countInStock,
+      discount,
     });
     return res;
   });
@@ -97,6 +100,7 @@ const AdminProduct = () => {
         image: res?.data?.image,
         type: res?.data?.type,
         countInStock: res?.data?.countInStock,
+        discount: res?.data?.discount,
       });
     }
     setIsPendingUpdate(false);
@@ -402,6 +406,7 @@ const AdminProduct = () => {
       image: "",
       type: "",
       countInStock: "",
+      discount: "",
     });
     form.resetFields();
   };
@@ -425,9 +430,10 @@ const AdminProduct = () => {
       price: stateProduct.price,
       description: stateProduct.description,
       rating: stateProduct.rating,
-      image: stateProduct.type,
+      image: stateProduct.image,
       type: stateProduct.type === "add-type" ? stateProduct.newType : stateProduct.type,
       countInStock: stateProduct.countInStock,
+      discount: stateProduct.discount,
     }
     mutation.mutate(params, {
       onSettled: () => {
@@ -485,7 +491,7 @@ const AdminProduct = () => {
       type: value
     })
 }
- console.log("state", stateProduct)
+ 
   return (
     <div>
       <WrapperHeader>Quản lý sản phẩm</WrapperHeader>
@@ -556,8 +562,6 @@ const AdminProduct = () => {
               <Select
                 name="type"
                 style={{border: "2px solid", borderRadius: "7px"}}
-                // defaultValue="lucy"
-                // style={{ width: 120 }}
                 value={stateProduct.type}
                 onChange={handleChangeSelect}
                 options={renderOptions(typeProduct?.data?.data)}
@@ -621,7 +625,22 @@ const AdminProduct = () => {
                 name="rating"
               />
             </Form.Item>
-
+            <Form.Item
+              label="Giảm giá"
+              name="discount"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập giảm giá!",
+                },
+              ]}
+            >
+              <InputComponent
+                value={stateProduct.discount}
+                onChange={handleOnchange}
+                name="discount"
+              />
+            </Form.Item>
             <Form.Item
               label="Ảnh"
               name="image"
@@ -752,6 +771,22 @@ const AdminProduct = () => {
                 value={stateProductDetails.rating}
                 onChange={handleOnchangeDetails}
                 name="rating"
+              />
+            </Form.Item>
+            <Form.Item
+              label="Giảm giá"
+              name="discount"
+              rules={[
+                {
+                  required: true,
+                  message: "Vui lòng nhập giảm giá!",
+                },
+              ]}
+            >
+              <InputComponent
+                value={stateProductDetails.discount}
+                onChange={handleOnchangeDetails}
+                name="discount"
               />
             </Form.Item>
 

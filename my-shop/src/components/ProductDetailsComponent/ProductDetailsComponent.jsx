@@ -11,6 +11,8 @@ import Loading from '../LoadingComponent/Loading'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { addOrderProduct } from '../../redux/slides/orderSlide'
+import { convertPrice } from '../../utils'
+import ModalComponent from '../ModalComponent/ModalComponent'
 
 const ProductDetailsComponent = ({idProduct}) => {
     const [numProduct, setNumProduct] = useState(1);
@@ -102,7 +104,7 @@ const ProductDetailsComponent = ({idProduct}) => {
                     <WrapperStyleTextSell> | Đã bán 1000</WrapperStyleTextSell>
                 </div>
                 <WrapperPriceProduct>
-                    <WrapperPriceTextProduct>{productDetails?.price.toLocaleString()} đ</WrapperPriceTextProduct>
+                    <WrapperPriceTextProduct>{convertPrice(productDetails?.price)} đ</WrapperPriceTextProduct>
                 </WrapperPriceProduct>
                 <WrapperAddressProduct>
                     <span>Giao đến </span>
@@ -150,6 +152,7 @@ const ProductDetailsComponent = ({idProduct}) => {
                 </div>
             </Col>
         </Row>
+
      </Loading>
   )
 }
