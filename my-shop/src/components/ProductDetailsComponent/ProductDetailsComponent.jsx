@@ -30,7 +30,6 @@ const ProductDetailsComponent = ({idProduct}) => {
             return res.data
         }
       }
-      console.log('location', location)
     const handleChangeCount = (type) => {
         if(type === "increase") {
             setNumProduct(numProduct+1)
@@ -47,17 +46,6 @@ const ProductDetailsComponent = ({idProduct}) => {
         if(!user?.id) {
             navigate("/sign-in", {state: location?.pathname})
         }else {
-            // {
-            //     name: { type: String, required: true },
-            //     amount: { type: Number, required: true },
-            //     image: { type: String, required: true },
-            //     price: { type: Number, required: true },
-            //     product: {
-            //       type: mongoose.Schema.Types.ObjectId,
-            //       ref: "Product",
-            //       required: true,
-            //     },
-            //   },
             dispatch(addOrderProduct({
                 orderItem: {
                     name: productDetails?.name,
@@ -65,12 +53,11 @@ const ProductDetailsComponent = ({idProduct}) => {
                     image: productDetails?.image,
                     price: productDetails?.price,
                     product: productDetails?._id
-                }
-            }
+                },           
+            },
             ))
         }
       }
-      console.log("productDetails", productDetails, user )
   return (
     <Loading isPending={isPending}>
         <Row style={{ padding: '16px', background: '#fff', borderRadius: '4px'}}>

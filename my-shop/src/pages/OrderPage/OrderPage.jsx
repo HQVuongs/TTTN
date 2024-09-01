@@ -31,6 +31,8 @@ import { useMutationHooks } from "../../hooks/userMutationHook";
 import * as UserService from "../../services/UserService";
 import * as message from "../../components/Message/Message";
 import { updateUser } from "../../redux/slides/userSlide";
+import { useNavigate } from "react-router-dom";
+import StepComponent from "../../components/StepComponent/StepComponent";
 const OrderPage = () => {
   const order = useSelector((state) => state.order);
   const user = useSelector((state) => state.user);
@@ -43,6 +45,7 @@ const OrderPage = () => {
     address: "",
     city: "",
   });
+  const navigate = useNavigate()
   const [form] = Form.useForm();
   const onChange = (e) => {
     if (listChecked.includes(e.target.value)) {
@@ -66,7 +69,6 @@ const OrderPage = () => {
     dispatch(removeOrderProduct({ idProduct }));
   };
   const handleOnChangeCheckAll = (e) => {
-    console.log("e.target", e.target.checked);
     if (e.target.checked) {
       const newListChecked = [];
       order?.orderItems?.forEach((item) => {
@@ -114,12 +116,16 @@ const OrderPage = () => {
     }
     return 0;
   }, [order]);
+  const handleChangeAddress = () => {
+    setIsOpenModalUpdateInfor(true)
+  }
   const diliveryPriceMemo = useMemo(() => {
-    if (priceMemo > 200000) {
+    if (priceMemo > 200000 && priceMemo < 500000) {
       return 10000;
-    } else if (priceMemo === 0) {
-      return 0;
-    } else {
+    } else if ( order?.orderItemsSelected?.length === 0 || priceMemo >= 500000) {
+        return 0;
+    }else
+    {
       return 20000;
     }
   }, [priceMemo]);
@@ -131,8 +137,11 @@ const OrderPage = () => {
   const handleAddCard = () => {
     if (!order?.orderItemsSelected?.length) {
       message.error("Vui lòng chọn sản phẩm");
-    } else if (user?.phone || !user?.address || user?.name || !user?.city) {
+    }else if (!user?.phone || !user?.address || !user?.name || !user?.city) {
       setIsOpenModalUpdateInfor(true);
+    }else {
+      message.success()
+      navigate("/payment")
     }
   };
   const mutationUpdate = useMutationHooks((data) => {
@@ -171,15 +180,31 @@ const OrderPage = () => {
       [e.target.name]: e.target.value,
     });
   };
+  const itemsDelivery = [
+    {
+      title: 'Miễn phí',
+      description: "Trên 500.000 VNĐ",
+    },
+
+    {
+      title: '10.000 VNĐ',
+      description: "Từ 200.000 VNĐ đến dưới 500.000 VNĐ",
+    },
+    {
+      title: '20.000 VNĐ',
+      description: "Dưới 200.000 VNĐ",
+    },
+  ]
   return (
     <div style={{ background: "#f5f5fa", width: "100%", height: "100vh" }}>
       <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
-        <h3 style={{ fontWeight: "bold" }}>Giỏ hàng</h3>
+        <h3 style={{ fontWeight: "bold", fontSize: "20px", textAlign: "center" }}>Giỏ hàng</h3>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <WrapperLeft>
             <WrapperStyleHeaderDilivery>
               {/* Placeholder cho StepComponent */}
-              <div style={{ height: "40px", background: "#ddd" }}></div>
+              <div style={{fontSize: "15px"}}>Phí giao hàng: </div>
+                <StepComponent items={itemsDelivery} current={diliveryPriceMemo === 10000 ? 1 : diliveryPriceMemo === 20000 ? 2 : order?.orderItemsSelected?.length === 0 ? 3: 0} />
             </WrapperStyleHeaderDilivery>
             <WrapperStyleHeader>
               <span style={{ display: "inline-block", width: "390px" }}>
@@ -310,8 +335,8 @@ const OrderPage = () => {
               <WrapperInfo>
                 <div>
                   <span>Địa chỉ: </span>
-                  <span style={{ fontWeight: "bold" }}>Không có địa chỉ</span>
-                  <span style={{ color: "#9255FD", cursor: "pointer" }}>
+                  <span style={{ fontWeight: "bold" }}>{`${user?.address}, ${user?.city}`} </span>
+                  <span onClick={handleChangeAddress} style={{ color: "#9255FD", cursor: "pointer" }}>
                     Thay đổi
                   </span>
                 </div>
@@ -411,6 +436,7 @@ const OrderPage = () => {
         </div>
       </div>
       <ModalComponent
+        forceRender
         title="Cập nhật thông tin giao hàng"
         open={isOpenModalUpdateInfor}
         onCancel={handleCancelUpdate}
