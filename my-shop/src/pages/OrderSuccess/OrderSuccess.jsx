@@ -21,7 +21,6 @@ const OrderSuccess = () => {
   const order = useSelector((state) => state.order);
   const location = useLocation();
   const { state } = location;
-  console.log("location", location);
   return (
     <div style={{ background: "#f5f5fa", width: "100%", height: "100vh" }}>
       <Loading isPending={false}>

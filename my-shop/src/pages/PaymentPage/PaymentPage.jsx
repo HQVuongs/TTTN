@@ -21,9 +21,11 @@ import { convertPrice } from "../../utils";
 import { useMutationHooks } from "../../hooks/userMutationHook";
 import * as UserService from "../../services/UserService";
 import * as message from "../../components/Message/Message";
+import * as PaymentService from "../../services/PaymentService";
 import { updateUser } from "../../redux/slides/userSlide";
 import { useNavigate } from "react-router-dom";
 import { removeAllOrderProduct } from "../../redux/slides/orderSlide";
+import { PayPalButton } from "react-paypal-button-v2";
 const PaymentPage = () => {
   const order = useSelector((state) => state.order);
   const user = useSelector((state) => state.user);
@@ -39,6 +41,7 @@ const PaymentPage = () => {
   });
   const navigate = useNavigate()
   const [form] = Form.useForm();
+  const [sdkReady, setSdkReady] = useState(false)
 
   useEffect(() => {
     form.setFieldsValue(stateUserDetails);
@@ -61,24 +64,26 @@ const PaymentPage = () => {
     }, 0);
     return result;
   }, [order]);
-  const priceDiscount = useMemo(() => {
+  const priceDiscount= useMemo(() => {
     const result = order?.orderItemsSelected?.reduce((total, cur) => {
-      return total + cur.discount * cur.amount;
-    }, 0);
-    if (Number(result)) {
-      return result;
+      const totalDiscount = cur.discount ? cur.discount : 0
+      return total + (cur.price * (totalDiscount  * cur.amount) / 100)
+    },0)
+    if(Number(result)){
+      return result
     }
-    return 0;
-  }, [order]);
+    return 0
+  },[order])
   const handleChangeAddress = () => {
     setIsOpenModalUpdateInfor(true);
   };
   const diliveryPriceMemo = useMemo(() => {
-    if (priceMemo > 200000) {
+    if (priceMemo > 200000 && priceMemo < 500000) {
       return 10000;
-    } else if (priceMemo === 0) {
-      return 0;
-    } else {
+    } else if (priceMemo >= 500000) {
+        return 0;
+    }else
+    {
       return 20000;
     }
   }, [priceMemo]);
@@ -131,7 +136,6 @@ const PaymentPage = () => {
       order?.orderItemsSelected?.forEach(element => {
         arrayOrdered.push(element.product)
       });
-      console.log("arrayOrdered", arrayOrdered)
       dispatch(removeAllOrderProduct({listChecked: arrayOrdered}))
       message.success("Đặt hàng thành công");
       navigate("/orderSuccess", {
@@ -183,6 +187,44 @@ const PaymentPage = () => {
   }
   const handlePayment = (e) => {
     setPayment(e.target.value)
+  }
+  const addPaypalScript = async () => {
+    const {data} = await PaymentService.getConfig()
+    const script = document.createElement("script")
+    script.type = "text/javascript"
+    script.src = `https://sandbox.paypal.com/sdk/js?client-id=${data}`
+    script.async = true;
+    script.onload = () => {
+      setSdkReady(true)
+    }
+    document.body.appendChild(script)
+    console.log("data", data)
+  }
+
+  useEffect(() => {
+    if(!window.paypal) {
+      addPaypalScript()
+
+    }else {
+      setSdkReady(true)
+    }
+  }, [])
+  const onSuccessPaypal = (details, data) => {
+    mutationAddOrder.mutate({
+      token: user?.access_token,
+      orderItems: order?.orderItemsSelected,
+      fullName: user?.name,
+      address: user?.address,
+      phone: user?.phone,
+      city: user?.city,
+      paymentMethod: payment,
+      itemsPrice: priceMemo,
+      shippingPrice: diliveryPriceMemo,
+      totalPrice: totalPriceMemo,
+      user: user?.id,
+      isPaid: true,
+      paidAt: details.update_time
+    })
   }
   return (
     <div style={{ background: "#f5f5fa", width: "100%", height: "100vh" }}>
@@ -260,7 +302,7 @@ const PaymentPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {`${priceDiscount} %`}
+                    {`${priceDiscount}`}
                   </span>
                 </div>
                 <div
@@ -300,6 +342,20 @@ const PaymentPage = () => {
                 </span>
               </WrapperTotal>
             </div>
+            {payment === "paypal" && sdkReady ? (
+              <div style={{width: "320px"}}>
+                <PayPalButton
+                amount= {totalPriceMemo}
+                // shippingPreference="NO_SHIPPING" // default is "GET_FROM_FILE"
+                onSuccess={onSuccessPaypal}
+                onError={() => {
+                  alert("Error")
+                }}
+              />
+
+              </div>
+            ) : (
+
             <ButtonComponent
               onClick={() => handleAddOrder()}
               size={40}
@@ -317,6 +373,7 @@ const PaymentPage = () => {
                 fontWeight: "700",
               }}
             ></ButtonComponent>
+            )}
           </WrapperRight>
         </div>
       </div>

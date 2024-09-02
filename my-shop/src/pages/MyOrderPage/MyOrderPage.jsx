@@ -18,11 +18,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMutationHooks } from "../../hooks/userMutationHook";
 const MyOrderPage = () => {
   const location = useLocation();
-  console.log("location", location);
   const { state } = location;
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user)
   const fetchMyOrder = async () => {
     const res = await OrderService.getOrderByUserId(state?.id, state?.token);
-    console.log("res", res);
     return res.data;
   };
 
@@ -32,8 +32,14 @@ const MyOrderPage = () => {
     enabled: !!(state?.id && state?.token),
   });
   const { isPending, data } = queryOrder;
+  const handleDetailsOrder = (id) => {
+    navigate(`/details-order/${id}`,{
+      state: {
+        token: state?.token
+      }
+    })
 
-  console.log("data", data);
+  }
   const renderProduct = (data) => {
     return data?.map((order) => {
       return (
@@ -60,17 +66,53 @@ const MyOrderPage = () => {
           >
             {order?.name}
           </div>
+          <div
+            style={{
+              width: 260,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              marginLeft: "10px",
+            }}
+          >
+           Số lượng: {order?.amount}
+          </div>
           <span
             style={{ fontSize: "13px", color: "#242424", marginLeft: "auto" }}
           >
-            {convertPrice(order?.price)}
+            Đơn giá: {convertPrice(order?.price)}
           </span>
         </WrapperHeaderItem>
       );
     });
   };
+  const mutation = useMutationHooks(
+    (data) => {
+      const { id, token , orderItems, userId } = data
+      const res = OrderService.cancelOrder(id, token,orderItems, userId)
+      return res
+    }
+  )
+  const handleCancelOrder = (order) => {
+    mutation.mutate({id : order._id, token:state?.token, orderItems: order?.orderItems, userId: user.id }, {
+      onSuccess: () => {
+        queryOrder.refetch()
+      },
+    })
+  }
+  const { isPending: isPendingCancel, isSuccess: isSuccessCancel, isError: isErrorCancel, data: dataCancel } = mutation
+
+  useEffect(() => {
+    if (isSuccessCancel && dataCancel?.status === 'OK') {
+      message.success()
+    } else if(isSuccessCancel && dataCancel?.status === 'ERR') {
+      message.error(dataCancel?.message)
+    }else if (isErrorCancel) {
+      message.error()
+    }
+  }, [isErrorCancel, isSuccessCancel])
   return (
-    <Loading isPending={isPending}>
+    <Loading isPending={isPending || isPendingCancel}>
       <WrapperContainer>
         <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
           <h2 style={{fontWeight: "bold", textAlign: "center"}}>Đơn hàng của tôi</h2>
@@ -127,6 +169,7 @@ const MyOrderPage = () => {
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <ButtonComponent
+                       onClick={() => handleCancelOrder(order)}
                         size={40}
                         styleButton={{
                           height: "36px",
@@ -137,6 +180,7 @@ const MyOrderPage = () => {
                         styleTextButton={{ color: "#9255FD", fontSize: "14px" }}
                       ></ButtonComponent>
                       <ButtonComponent
+                      onClick={() => handleDetailsOrder(order?._id)}
                         size={40}
                         styleButton={{
                           height: "36px",

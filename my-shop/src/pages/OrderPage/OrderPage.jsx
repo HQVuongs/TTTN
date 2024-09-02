@@ -58,13 +58,17 @@ const OrderPage = () => {
     }
   };
 
-  const handleChangeCount = (type, idProduct) => {
-    if (type === "increase") {
-      dispatch(increaseAmount({ idProduct }));
-    } else {
-      dispatch(decreaseAmount({ idProduct }));
+  const handleChangeCount = (type, idProduct, limited) => {
+    if(type === 'increase') {
+      if(!limited) {
+        dispatch(increaseAmount({idProduct}))
+      }
+    }else {
+      if(!limited) {
+        dispatch(decreaseAmount({idProduct}))
+      }
     }
-  };
+  }
   const handleDeleteOrder = (idProduct) => {
     dispatch(removeOrderProduct({ idProduct }));
   };
@@ -107,15 +111,16 @@ const OrderPage = () => {
     }, 0);
     return result;
   }, [order]);
-  const priceDiscount = useMemo(() => {
+  const priceDiscount= useMemo(() => {
     const result = order?.orderItemsSelected?.reduce((total, cur) => {
-      return total + cur.discount * cur.amount;
-    }, 0);
-    if (Number(result)) {
-      return result;
+      const totalDiscount = cur.discount ? cur.discount : 0
+      return total + (cur.price * (totalDiscount  * cur.amount) / 100)
+    },0)
+    if(Number(result)){
+      return result
     }
-    return 0;
-  }, [order]);
+    return 0
+  },[order])
   const handleChangeAddress = () => {
     setIsOpenModalUpdateInfor(true)
   }
@@ -284,12 +289,12 @@ const OrderPage = () => {
                             background: "transparent",
                             cursor: "pointer",
                           }}
+                          onClick={() =>
+                            handleChangeCount("decrease", order?.product, order?.amount === 1 )
+                          }
                         >
                           <MinusOutlined
                             style={{ color: "#000", fontSize: "10px" }}
-                            onClick={() =>
-                              handleChangeCount("decrease", order?.product)
-                            }
                           />
                         </button>
                         <WrapperInputNumber
@@ -302,12 +307,12 @@ const OrderPage = () => {
                             background: "transparent",
                             cursor: "pointer",
                           }}
+                          onClick={() =>
+                            handleChangeCount("increase", order?.product, order?.amount === order.countInStock, order?.amount === 1)
+                          }
                         >
                           <PlusOutlined
                             style={{ color: "#000", fontSize: "10px" }}
-                            onClick={() =>
-                              handleChangeCount("increase", order?.product)
-                            }
                           />
                         </button>
                       </WrapperCountOrder>
@@ -375,7 +380,7 @@ const OrderPage = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    {`${priceDiscount} %`}
+                    {`${priceDiscount}`}
                   </span>
                 </div>
                 <div
