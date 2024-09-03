@@ -93,6 +93,7 @@ const OrderSuccess = () => {
                             style={{
                               fontSize: "13px",
                               fontWeight: 500,
+
                             }}
                           >
                             {" "}

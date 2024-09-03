@@ -1,5 +1,5 @@
 import { Button, Col, Image, InputNumber, Rate, Row } from 'antd'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import imageProduct from '../../assets/images/text.png'
 import imageProductSmall from '../../assets/images/imgsmall.png'    
 import { WrapperAddressProduct, WrapperInputNumber, WrapperPriceProduct, WrapperPriceTextProduct, WrapperQualityProduct, WrapperStyleColImage, WrapperStyleImageSmall, WrapperStyleNameProduct, WrapperStyleTextSell } from './style'
@@ -10,13 +10,15 @@ import { useQuery } from '@tanstack/react-query'
 import Loading from '../LoadingComponent/Loading'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { addOrderProduct } from '../../redux/slides/orderSlide'
+import { addOrderProduct, resetOrder } from '../../redux/slides/orderSlide'
 import { convertPrice } from '../../utils'
-import ModalComponent from '../ModalComponent/ModalComponent'
+import * as message from "../Message/Message";
 
 const ProductDetailsComponent = ({idProduct}) => {
     const [numProduct, setNumProduct] = useState(1);
+    const [errorLimitOrder, setErrorLimitOrder] = useState(false)
     const user = useSelector((state) => state.user);
+    const order = useSelector((state) => state.order);
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();
@@ -30,11 +32,31 @@ const ProductDetailsComponent = ({idProduct}) => {
             return res.data
         }
       }
-    const handleChangeCount = (type) => {
-        if(type === "increase") {
-            setNumProduct(numProduct+1)
-        } else{
-            setNumProduct(numProduct-1)
+      useEffect(() => {
+        const orderRedux = order?.orderItems?.find((item) => item.product === productDetails?._id)
+        if((orderRedux?.amount + numProduct) <= orderRedux?.countInStock || (!orderRedux && productDetails?.countInStock > 0)){
+            setErrorLimitOrder(false)
+        }else if(productDetails?.countInStock === 0) {
+            setErrorLimitOrder(true)
+        }
+    }, [numProduct])
+    useEffect(() => {
+        if(order.isSuccessOrder){
+            message.success("Đã thêm vào giỏ hàng")
+        }
+        return () => {
+            dispatch(resetOrder())
+        }
+    }, [order.isSuccessOrder])
+    const handleChangeCount = (type, limited) => {
+        if(type === 'increase') {
+            if(!limited) {
+                setNumProduct(numProduct + 1)
+            }
+        }else {
+            if(!limited) {
+                setNumProduct(numProduct - 1)
+            }
         }
     }
     const { isPending, data: productDetails} = useQuery({
@@ -46,18 +68,25 @@ const ProductDetailsComponent = ({idProduct}) => {
         if(!user?.id) {
             navigate("/sign-in", {state: location?.pathname})
         }else {
-            dispatch(addOrderProduct({
-                orderItem: {
-                    name: productDetails?.name,
-                    amount: numProduct,
-                    image: productDetails?.image,
-                    price: productDetails?.price,
-                    product: productDetails?._id,
-                    discount: productDetails?.discount,
-                    countInStock: productDetails?.countInStock
-                },           
-            },
-            ))
+            const orderRedux = order?.orderItems?.find((item) => item.product === productDetails?._id)
+            if((orderRedux?.amount + numProduct) <= orderRedux?.countInStock || (!orderRedux && productDetails?.countInStock > 0))
+            {
+                dispatch(addOrderProduct({
+                    orderItem: {
+                        name: productDetails?.name,
+                        amount: numProduct,
+                        image: productDetails?.image,
+                        price: productDetails?.price,
+                        product: productDetails?._id,
+                        discount: productDetails?.discount,
+                        countInStock: productDetails?.countInStock
+                    },           
+                },
+                ))
+                
+            }else {
+                setErrorLimitOrder(true)
+            }
         }
       }
   return (
@@ -103,16 +132,17 @@ const ProductDetailsComponent = ({idProduct}) => {
                 <div style={{ margin: '10px 0 20px', padding: '10px 0', borderTop: '1px solid #e5e5e5', borderBottom: '1px solid #e5e5e5'}}>
                     <div style={{ marginBottom: '10px'}}>Số Lượng</div>
                     <WrapperQualityProduct>
-                        <button style={{ border: 'none', background: 'transparent', cursor: "pointer"}} onClick={() => handleChangeCount("decrease")}>
+                        <button style={{ border: 'none', background: 'transparent', cursor: "pointer"}} onClick={() => handleChangeCount("decrease", numProduct === 1)}>
                             <MinusOutlined style={{ color: 'rgb(190, 192, 200)', fontSize: '15px'}} />
                         </button>                     
-                        <WrapperInputNumber defaultValue={1} onChange={onChange} value={numProduct} size='small'/>
-                        <button style={{ border: 'none', background: 'transparent', cursor: "pointer"}} onClick={() => handleChangeCount("increase")}>
+                        <WrapperInputNumber defaultValue={1} min={1} max={productDetails?.countInStock} onChange={onChange} value={numProduct} size='small'/>
+                        <button style={{ border: 'none', background: 'transparent', cursor: "pointer"}} onClick={() => handleChangeCount("increase", numProduct === productDetails?.countInStock)}>
                             <PlusOutlined style={{ color: 'rgb(190, 192, 200)', fontSize: '15px'}}  />
                         </button>                       
                     </WrapperQualityProduct>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px'}}>
+                    <div>
                     <ButtonComponent
                         size={40}
                         styleButton={{ 
@@ -126,6 +156,8 @@ const ProductDetailsComponent = ({idProduct}) => {
                         textButton={'Chọn Mua'}
                         styleTextButton={{ color: '#fff', fontSize: '15px', fontWeight: '700' }}
                     ></ButtonComponent>
+                    { errorLimitOrder && <div style={{ color: "red"}}>Sản phẩm đã hết hàng</div>}
+                    </div>
                     <ButtonComponent
                         size={40}
                         styleButton={{ 

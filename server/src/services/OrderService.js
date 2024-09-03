@@ -2,8 +2,7 @@
 
 const Order = require("../models/OrderProduct");
 const Product = require("../models/ProductModel")
-const bcrypt = require("bcrypt");
-const { generalAccessToken, generalRefreshToken } = require("./JwtService");
+const EmailSerVice = require("../services/EmailService")
 
 const createOrder = (newOrder) => {
   return new Promise(async (resolve, reject) => {
@@ -19,7 +18,8 @@ const createOrder = (newOrder) => {
       phone,
       user,
       isPaid,
-      paidAt
+      paidAt,
+      email
     } = newOrder;
     try { 
       const promises = orderItems.map(async (order) => {
@@ -34,7 +34,6 @@ const createOrder = (newOrder) => {
           }},
           {new: true}
       )
-      console.log("productData", productData)
       if(productData) {
         const createdOrder = await Order.create({
           orderItems,
@@ -53,6 +52,7 @@ const createOrder = (newOrder) => {
           paidAt,
         });
         if (createdOrder) {
+          await EmailSerVice.sendEmailCreateOrder(email, orderItems)
           return{
             status: "OK",
             message: "SUCCESS",
@@ -76,12 +76,13 @@ const createOrder = (newOrder) => {
           message: `San pham voi id${newData.join(",")} khong du hang`
         })
       }
+      
       resolve({
         status: "OK",
         message: "Success"
       })
-      console.log('results', results)
     } catch (e) {
+      console.log("e", e)
       reject(e);
     }
   });

@@ -31,11 +31,12 @@ export const WrapperListOrder = styled.div`
 
 export const WrapperItemOrder = styled.div`
   display: flex;
-  align-items: center;
+  align-items: center ;
   padding: 9px 16px;
   background: #fff;
   margin-top: 12px;
   justify-content: center;
+
 `
 
 export const WrapperPriceDiscount = styled.span`
@@ -78,6 +79,7 @@ export const WrapperItemOrderInfo = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+   flex-direction: column;
 `
 
 export const WrapperTotal = styled.div`
