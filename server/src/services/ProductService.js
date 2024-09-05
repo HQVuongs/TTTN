@@ -17,9 +17,9 @@ const createProduct = (newProduct) => {
         name: name,
       });
       if (checkProduct !== null) {
-        resolve({
+        reject({
           status: "ERR",
-          message: "The name of product is already",
+          message: "Sản phẩm đã tồn tại",
         });
       }
       const createdProduct = await Product.create({
@@ -53,9 +53,20 @@ const updateProduct = (id, data) => {
       });
 
       if (checkProduct === null) {
-        resolve({
+        reject({
           status: "ERR",
-          message: "The product is not defined",
+          message: "Không tìm thấy sản phẩm",
+        });
+      }
+      const isDuplicate = await Product.findOne({
+        name: data.name,
+        _id: { $ne: id }, // Loại trừ sản phẩm hiện tại đang được cập nhật
+      });
+
+      if (isDuplicate) {
+        reject({
+          status: "ERR",
+          message: "Sản phẩm đã tồn tại",
         });
       }
 
@@ -135,16 +146,16 @@ const deleteProduct = (id) => {
         _id: id,
       });
       if (checkProduct === null) {
-        resolve({
-          status: "OK",
-          message: "The product is not defined",
+        reject({
+          status: "ERR",
+          message: "Không tìm thấy sản phẩm",
         });
       }
 
       await Product.findByIdAndDelete(id);
       resolve({
         status: "OK",
-        message: "Delete product success",
+        message: "Xóa sản phẩm thành công",
       });
     } catch (e) {
       reject(e);
@@ -158,9 +169,9 @@ const getDetailsProduct = (id) => {
         _id: id,
       });
       if (product === null) {
-        resolve({
-          status: "OK",
-          message: "The product is not defined",
+        reject({
+          status: "ERR",
+          message: "Không tìm thấy sản phẩm",
         });
       }
 
@@ -180,7 +191,7 @@ const deleteManyProduct = (ids) => {
       await Product.deleteMany({ _id: ids });
       resolve({
         status: "OK",
-        message: "Delete products success",
+        message: "Xóa thành công",
       });
     } catch (e) {
       reject(e);

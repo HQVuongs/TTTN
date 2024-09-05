@@ -28,7 +28,7 @@ const sendEmailCreateOrder = async (email, orderItems) => {
         // send mail with defined transport object
         const info = await transporter.sendMail({
           from: process.env.MAIL_ACCOUNT, // sender address
-          to: "sieuboy113@gmail.com", // list of receivers
+          to: email, // list of receivers
           subject: "Bạn đã đặt hàng tại FOCOSHOP", // Subject line
           text: "Hello world?", // plain text body
           html: `<div><b>Bạn đã đặt hàng thành công tại FOCOSHOP</b></div>${listItem}`, // html body

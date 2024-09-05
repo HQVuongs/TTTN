@@ -28,8 +28,8 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState("");
   const [search, setSearch] = useState("");
-  const [isOpenPopup, setIsOpenPopup] = useState(false)
-  const order = useSelector((state) => state.order)
+  const [isOpenPopup, setIsOpenPopup] = useState(false);
+  const order = useSelector((state) => state.order);
   const handleNavigateLogin = () => {
     navigate("/sign-in");
   };
@@ -37,7 +37,7 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
     setPending(true);
     await UserService.logoutUser();
     dispatch(resetUser());
-    navigate('/')
+    navigate("/");
     setPending(false);
   };
 
@@ -66,28 +66,35 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
       </WrapperContentPopup>
     </div>
   );
-  const handleClickNavigate = (type) =>{
-    if(type === "profile") {
-      navigate("/profile-user")
-    }else if(type === "admin"){
-      navigate("/system/admin")
-    }else if( type === "my-order"){
-      navigate("/my-order",{ state: {
-        id: user?.id,
-        token: user?.access_token
-      }})
-    }else {
-      handleLogout()
+  const handleClickNavigate = (type) => {
+    if (type === "profile") {
+      navigate("/profile-user");
+    } else if (type === "admin") {
+      navigate("/system/admin");
+    } else if (type === "my-order") {
+      navigate("/my-order", {
+        state: {
+          id: user?.id,
+          token: user?.access_token,
+        },
+      });
+    } else {
+      handleLogout();
     }
-    setIsOpenPopup(false)
-  }
+    setIsOpenPopup(false);
+  };
   const onSearch = (e) => {
-    setSearch(e.target.value)
-    dispatch(searchProduct(e.target.value))
-  }
+    setSearch(e.target.value);
+    dispatch(searchProduct(e.target.value));
+  };
   return (
     <div>
-      <WrapperHeader style={{ justifyContent: isHiddenSearch && isHiddenCart ? 'space-between' : 'unset'}}>
+      <WrapperHeader
+        style={{
+          justifyContent:
+            isHiddenSearch && isHiddenCart ? "space-between" : "unset",
+        }}
+      >
         <Col span={5}>
           <Link to="/">
             <WrapperTextHeader link="/">FOCOSHOP</WrapperTextHeader>
@@ -97,7 +104,7 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
           <Col span={13}>
             <ButtonInputSearch
               size="large"
-              textButton="Tìm kiếm"
+              textbutton="Tìm kiếm"
               placeholder="Nhập thông tin tìm kiếm"
               onChange={onSearch}
             />
@@ -126,7 +133,10 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
               {user?.access_token ? (
                 <>
                   <Popover content={content} trigger="hover" open={isOpenPopup}>
-                    <div style={{ cursor: "pointer" }} onClick={() => setIsOpenPopup((prev) => !prev)}>
+                    <div
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setIsOpenPopup((prev) => !prev)}
+                    >
                       Xin chào, {user.name}
                     </div>
                   </Popover>
@@ -148,7 +158,10 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
             </WrapperHeaderAccount>
           </Loading>
           {!isHiddenCart && (
-            <div onClick={() => navigate("/order")} style={{cursor: "pointer"}}>
+            <div
+              onClick={() => navigate("/order")}
+              style={{ cursor: "pointer" }}
+            >
               <Badge
                 count={order?.orderItems?.length}
                 size="small"
@@ -158,9 +171,9 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
                   style={{ fontSize: "20px", color: "#fff" }}
                 />
               </Badge>
-                <WrapperTextHeaderSmall style={{ cursor: "pointer" }}>
-                  Giỏ Hàng
-                </WrapperTextHeaderSmall>
+              <WrapperTextHeaderSmall style={{ cursor: "pointer" }}>
+                Giỏ Hàng
+              </WrapperTextHeaderSmall>
             </div>
           )}
         </Col>

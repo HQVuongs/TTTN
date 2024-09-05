@@ -15,7 +15,7 @@ const createUser = (newUser) => {
             if(checkUser !== null){
                 resolve({
                     status: 'ERR',
-                    message: 'The email is already'
+                    message: 'Email đã tồn tại'
                 })
             }
             const hash = bcrypt.hashSync(password, 10);
@@ -49,7 +49,7 @@ const loginUser = (userLogin) => {
             if(checkUser === null){
                 resolve({
                     status: 'ERR',
-                    message: 'The user is not defined'
+                    message: 'Người dùng không tồn tại'
                 })
             }
             // checkPassword 
@@ -58,7 +58,7 @@ const loginUser = (userLogin) => {
             if(!comparePassword) {
                 resolve({
                     status: 'ERR',
-                    message: 'The password or user is incorrect'
+                    message: 'Mật khẩu hoặc tài khoản không đúng'
                 })
             }
 
@@ -92,9 +92,9 @@ const updateUser = (id, data) => {
                 _id: id
             })
             if(checkUser === null){
-                resolve({
+                reject({
                     status: 'ERR',
-                    message: 'The user is not defined'
+                    message: 'Người dùng không tồn tại'
                 })
             }
             const updatedUser = await User.findByIdAndUpdate(id, data, { new: true})
@@ -143,7 +143,7 @@ const deleteManyUser = (ids) => {
             await User.deleteMany({_id: ids})
             resolve({
                 status: 'OK',
-                message: 'Delete users success',
+                message: 'Xóa thành công',
             })
             
 
@@ -178,7 +178,7 @@ const getDetailsUser= (id) => {
             if(user === null){
                 resolve({
                     status: 'OK',
-                    message: 'The user is not defined'
+                    message: 'Người dùng không tồn tại'
                 })
             }
 

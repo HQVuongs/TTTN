@@ -10,58 +10,55 @@ import { Image } from "antd";
 import imageLogo from "../../assets/images/logo-login.png";
 import { EyeFilled, EyeInvisibleFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import * as UserService from "../../services/UserService"
+import * as UserService from "../../services/UserService";
 import { useMutationHooks } from "../../hooks/userMutationHook";
 import Loading from "../../components/LoadingComponent/Loading";
-import * as message from '../../components/Message/Message'
+import * as message from "../../components/Message/Message";
 
 const SignUpPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [isShowPassword, setIsShowPassword] = useState(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
-  const  [name, setName] = useState('');
-  const  [phone, setPhone] = useState('');
-  const  [email, setEmail] = useState('');
-  const  [password, setPassword] = useState('');
-  const  [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const mutation = useMutationHooks(
-    data => UserService.signUpUser(data)
-  )
-  const {data, isPending, isSuccess} = mutation 
+  const mutation = useMutationHooks((data) => UserService.signUpUser(data));
+  const { data, isPending, isSuccess } = mutation;
 
   useEffect(() => {
-    if(isSuccess && data?.status !== 'ERR') {
-      message.success()
-      handleNavigateSignIn()
+    if (isSuccess && data?.status !== "ERR") {
+      message.success();
+      handleNavigateSignIn();
     }
-  }, [isSuccess])
+  }, [isSuccess]);
 
   const handleOnchangeName = (value) => {
-    setName(value)
-  }
+    setName(value);
+  };
   const handleOnchangePhone = (value) => {
-    setPhone(value)
-  }
+    setPhone(value);
+  };
   const handleOnchangeEmail = (value) => {
-    setEmail(value)
-  }
+    setEmail(value);
+  };
 
-  const handleOnchangePassword= (value) => {
-    setPassword(value)
-  }
+  const handleOnchangePassword = (value) => {
+    setPassword(value);
+  };
   const handleOnchangeConfirmPassword = (value) => {
-    setConfirmPassword(value)
-  }
+    setConfirmPassword(value);
+  };
 
   const handleSignUp = () => {
-    mutation.mutate({ name, phone, email, password, confirmPassword })
-    
-  }
+    mutation.mutate({ name, phone, email, password, confirmPassword });
+  };
 
   const handleNavigateSignIn = () => {
-    navigate('/sign-in')
-  }
+    navigate("/sign-in");
+  };
 
   return (
     <div
@@ -96,7 +93,7 @@ const SignUpPage = () => {
             placeholder="Phone"
             value={phone}
             onChange={handleOnchangePhone}
-          />         
+          />
           <InputForm
             style={{ marginBottom: "10px" }}
             placeholder="abc@gmail.com"
@@ -105,7 +102,7 @@ const SignUpPage = () => {
           />
           <div style={{ position: "relative" }}>
             <span
-            onClick={() => setIsShowPassword(!isShowPassword)}
+              onClick={() => setIsShowPassword(!isShowPassword)}
               style={{
                 zIndex: 10,
                 position: "absolute",
@@ -125,7 +122,7 @@ const SignUpPage = () => {
           </div>
           <div style={{ position: "relative" }}>
             <span
-            onClick={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
+              onClick={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
               style={{
                 zIndex: 10,
                 position: "absolute",
@@ -142,31 +139,41 @@ const SignUpPage = () => {
               onChange={handleOnchangeConfirmPassword}
             />
           </div>
-          {data?.status === 'ERR' && <span style={{ color: 'red'}}>{data?.message}</span>}
+          {data?.status === "ERR" && (
+            <span style={{ color: "red" }}>{data?.message}</span>
+          )}
           <Loading isPending={isPending}>
-          <ButtonComponent
-          disabled ={!name.length || !email.length || !password.length || !confirmPassword.length || !phone.length}
-          onClick={handleSignUp}
-            size={40}
-            styleButton={{
-              background: "rgb(255, 57, 69)",
-              height: "48px",
-              width: "100%",
-              border: "none",
-              borderRadius: "4px",
-              margin: "26px 0 10px",
-            }}
-            textButton={"Đăng ký"}
-            styleTextButton={{
-              color: "#fff",
-              fontSize: "15px",
-              fontWeight: "700",
-            }}
-          ></ButtonComponent>
+            <ButtonComponent
+              disabled={
+                !name.length ||
+                !email.length ||
+                !password.length ||
+                !confirmPassword.length ||
+                !phone.length
+              }
+              onClick={handleSignUp}
+              size={40}
+              styleButton={{
+                background: "rgb(255, 57, 69)",
+                height: "48px",
+                width: "100%",
+                border: "none",
+                borderRadius: "4px",
+                margin: "26px 0 10px",
+              }}
+              textbutton={"Đăng ký"}
+              styletextbutton={{
+                color: "#fff",
+                fontSize: "15px",
+                fontWeight: "700",
+              }}
+            ></ButtonComponent>
           </Loading>
-          <WrapperTextLight>Quên mật khẩu</WrapperTextLight>
           <p>
-            Bạn đã có tài khoản? <WrapperTextLight onClick={handleNavigateSignIn}>Đăng nhập</WrapperTextLight>
+            Bạn đã có tài khoản?{" "}
+            <WrapperTextLight onClick={handleNavigateSignIn}>
+              Đăng nhập
+            </WrapperTextLight>
           </p>
         </WrapperContainerLeft>
         <WrapperContainerRight>

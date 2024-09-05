@@ -13,37 +13,41 @@ import Loading from "../../components/LoadingComponent/Loading";
 import { useDebounce } from "../../hooks/useDebounce";
 
 const HomePage = () => {
-  const searchProduct= useSelector((state) => state?.product?.search)
-  const searchDebounce = useDebounce(searchProduct, 500)
-  const [pending, setPending] = useState(false)
+  const searchProduct = useSelector((state) => state?.product?.search);
+  const searchDebounce = useDebounce(searchProduct, 500);
+  const [pending, setPending] = useState(false);
   const [limit, setLimit] = useState(12);
-  const [typeProducts, setTypeProducts] = useState([])
+  const [typeProducts, setTypeProducts] = useState([]);
 
   const fetchProductAll = async (context) => {
-    const limit = context?.queryKey && context?.queryKey[1]
-    const search = context?.queryKey && context?.queryKey[2]
-    const res = await ProductService.getAllProduct(search, limit)
+    const limit = context?.queryKey && context?.queryKey[1];
+    const search = context?.queryKey && context?.queryKey[2];
+    const res = await ProductService.getAllProduct(search, limit);
 
-    return res
-
-  }
+    return res;
+  };
   const fetchAllTypeProduct = async () => {
-    const res = await ProductService.getAllTypeProduct()
-    if(res?.status === "OK"){
-      setTypeProducts(res?.data)
+    const res = await ProductService.getAllTypeProduct();
+    if (res?.status === "OK") {
+      setTypeProducts(res?.data);
     }
-  }
-  const { isPending, data: products, isPlaceholderData} = useQuery({
+  };
+  const {
+    isPending,
+    data: products,
+    isPlaceholderData,
+  } = useQuery({
     queryKey: ["products", limit, searchDebounce],
     queryFn: fetchProductAll,
     retry: 3,
     retryDelay: 1000,
-    placeholderData: keepPreviousData 
+    placeholderData: keepPreviousData,
   });
   useEffect(() => {
-    fetchAllTypeProduct()
-  }, [])
-  const isDisabled = products?.total === products?.data?.length || products?.totalPage === 1;
+    fetchAllTypeProduct();
+  }, []);
+  const isDisabled =
+    products?.total === products?.data?.length || products?.totalPage === 1;
   return (
     <Loading isPending={isPending || pending}>
       <div style={{ width: "1270px", margin: "0 auto" }}>
@@ -89,9 +93,8 @@ const HomePage = () => {
               marginTop: "10px",
             }}
           >
-            
             <WrapperButtonMore
-              textButton={isPlaceholderData ? "Xin chờ..." : "Xem thêm"}
+              textbutton={isPlaceholderData ? "Xin chờ..." : "Xem thêm"}
               type="outline"
               styleButton={{
                 border: "1px solid rgb(255,140,0)",
@@ -101,14 +104,12 @@ const HomePage = () => {
                 borerRadius: "4px",
               }}
               disabled={isDisabled}
-              styleTextButton={{ fontWeight: 500, color: isDisabled && "#fff" }}
-              onClick = {() => {
-                if(!isDisabled) {
-                  setLimit((prev) => prev + 6)
+              styletextbutton={{ fontWeight: 500, color: isDisabled && "#fff" }}
+              onClick={() => {
+                if (!isDisabled) {
+                  setLimit((prev) => prev + 6);
                 }
-      
-              }
-              }
+              }}
             />
           </div>
         </div>

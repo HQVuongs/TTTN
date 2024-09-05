@@ -10,22 +10,22 @@ const createUser = async (req, res) => {
         if(!name || !email || !password || !confirmPassword || !phone){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The input is required'
+                message: 'Vui lòng điền thông tin!'
             })
         }else if(!isCheckPhone) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'Phone number is not valid'
+                message: 'Vui lòng điền số đúng số điện thoại!'
             })
         }else if(!isCheckEmail) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The input is email'
+                message: 'Vui lòng điền email!'
             })
         }else if(password !== confirmPassword) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The password is equal confirmPassword '
+                message: 'Xác nhận mật khẩu chưa đúng! '
             })            
         }
         const response = await UserService.createUser(req.body)
@@ -45,12 +45,12 @@ const loginUser = async (req, res) => {
         if(!email || !password){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The input is required'
+                message: 'Vui lòng điền thông tin!'
             })
         }else if(!isCheckEmail) {
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The input is email'
+                message: 'Vui lòng điền email!'
             })
         }
         const response = await UserService.loginUser(req.body)
@@ -75,7 +75,7 @@ const updateUser = async (req, res) => {
         if(!userId){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The userId is required'
+                message: 'Không tìm thấy người dùng'
             })
         }
         const response = await UserService.updateUser(userId, data)
@@ -110,7 +110,7 @@ const deleteMany = async (req, res) => {
         if(!ids){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The ids is required'
+                message: 'Không tìm thấy người dùng'
             })
         }
         const response = await UserService.deleteManyUser(ids)
@@ -138,7 +138,7 @@ const getDetailsUser = async (req, res) => {
         if(!userId){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The userId is required'
+                message: 'Không tìm thấy người dùng'
             })
         }
         const response = await UserService.getDetailsUser(userId)
@@ -173,7 +173,7 @@ const logoutUser = async (req, res) => {
         res.clearCookie('refresh_token')
         return res.status(200).json({
             status: 'OK',
-            message: 'Logout successfully'
+            message: 'Đăng xuất thành công'
         })
     }catch(e){
         return res.status(404).json({

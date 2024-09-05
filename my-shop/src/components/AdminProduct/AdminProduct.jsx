@@ -250,20 +250,6 @@ const AdminProduct = () => {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-    // render: (text) =>
-    //   searchedColumn === dataIndex ? (
-    //     // <Highlighter
-    //     //   highlightStyle={{
-    //     //     backgroundColor: '#ffc069',
-    //     //     padding: 0,
-    //     //   }}
-    //     //   searchWords={[searchText]}
-    //     //   autoEscape
-    //     //   textToHighlight={text ? text.toString() : ''}
-    //     // />
-    //   ) : (
-    //     text
-    //   ),
   });
 
   // ---
@@ -336,6 +322,8 @@ const AdminProduct = () => {
     products?.data?.map((product) => {
       return { ...product, key: product._id };
     });
+    
+    console.log("isError", isError)
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {
       message.success();
@@ -343,32 +331,32 @@ const AdminProduct = () => {
     } else if (isError) {
       message.error();
     }
-  }, [isSuccess]);
+  }, [isSuccess, isError]);
 
   useEffect(() => {
     if (isSuccessUpdated && dataUpdated?.status === "OK") {
       message.success();
       handleCloseDrawer();
-    } else if (isErrorUpdated) {
+    } else if(isErrorUpdated) {
       message.error();
     }
-  }, [isSuccessUpdated]);
+  }, [isSuccessUpdated, isErrorUpdated]);
 
   useEffect(() => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
       message.success();
       handleCancelDelete();
-    } else if (isErrorDeleted) {
+    } else if(isErrorDeleted){
       message.error();
     }
-  }, [isSuccessDeleted]);
+  }, [isSuccessDeleted, isErrorDeleted]);
   useEffect(() => {
     if (isSuccessDeletedMany && dataDeletedMany?.status === "OK") {
       message.success();
-    } else if (isErrorDeleted) {
+    } else if (isErrorDeletedMany){
       message.error();
     }
-  }, [isSuccessDeletedMany]);
+  }, [isSuccessDeletedMany, isErrorDeletedMany]);
 
   const handleCancelDelete = () => {
     setIsModalOpenDelete(false);

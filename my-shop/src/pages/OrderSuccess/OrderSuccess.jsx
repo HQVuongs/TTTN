@@ -8,7 +8,6 @@ import {
   WrapperContainer,
   WrapperValue,
   WrapperItemOrder,
-  WrapperCountOrder,
   WrapperItemOrderInfo,
 } from "./style";
 
@@ -18,7 +17,6 @@ import { orderContent } from "../../content";
 import { convertPrice } from "../../utils";
 
 const OrderSuccess = () => {
-  const order = useSelector((state) => state.order);
   const location = useLocation();
   const { state } = location;
   return (
@@ -51,7 +49,7 @@ const OrderSuccess = () => {
               <WrapperItemOrderInfo>
                 {state?.orders?.map((order) => {
                   return (
-                    <WrapperItemOrder>
+                    <WrapperItemOrder key={order?.name}>
                       <div
                         style={{
                           width: "390px",
@@ -93,7 +91,6 @@ const OrderSuccess = () => {
                             style={{
                               fontSize: "13px",
                               fontWeight: 500,
-
                             }}
                           >
                             {" "}
@@ -115,17 +112,17 @@ const OrderSuccess = () => {
                   );
                 })}
               </WrapperItemOrderInfo>
-                        <div>
-                          <span
-                            style={{
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: "red",
-                            }}
-                          >
-                            Tổng tiền: {convertPrice(state?.totalPriceMemo)}
-                          </span>
-                        </div>
+              <div>
+                <span
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    color: "red",
+                  }}
+                >
+                  Tổng tiền: {convertPrice(state?.totalPriceMemo)}
+                </span>
+              </div>
             </WrapperContainer>
           </div>
         </div>

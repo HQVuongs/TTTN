@@ -12,7 +12,7 @@ import Loading from '../../components/LoadingComponent/Loading'
 
 const DetailsOrderPage = () => {
   const params = useParams()
-  console.log("params", params)
+
   const location = useLocation()
   const { state } = location
   const { id } = params
@@ -33,7 +33,6 @@ const DetailsOrderPage = () => {
     },0)
     return result
   },[data])
-  console.log("data", data)
   return (
    <Loading isPending={isPending}>
      <div style={{width: '100%', height: '100vh', background: '#f5f5fa'}}>

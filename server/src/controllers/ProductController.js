@@ -27,7 +27,7 @@ const updateProduct = async (req, res) => {
         if(!productId){
             return res.status(200).json({
                 status: 'ERR',
-                message: 'The productId is required'
+                message: 'Sản phẩm không tồn tại'
             })
         }
         const response = await ProductService.updateProduct(productId, data)

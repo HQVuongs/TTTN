@@ -20,7 +20,7 @@ const MyOrderPage = () => {
   const location = useLocation();
   const { state } = location;
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user)
+  const user = useSelector((state) => state.user);
   const fetchMyOrder = async () => {
     const res = await OrderService.getOrderByUserId(state?.id, state?.token);
     return res.data;
@@ -31,15 +31,14 @@ const MyOrderPage = () => {
     queryFn: fetchMyOrder,
     enabled: !!(state?.id && state?.token),
   });
-  const { isPending, data } = queryOrder;
+  const { isPending, data = [] } = queryOrder;
   const handleDetailsOrder = (id) => {
-    navigate(`/details-order/${id}`,{
+    navigate(`/details-order/${id}`, {
       state: {
-        token: state?.token
-      }
-    })
-
-  }
+        token: state?.token,
+      },
+    });
+  };
   const renderProduct = (data) => {
     return data?.map((order) => {
       return (
@@ -75,7 +74,7 @@ const MyOrderPage = () => {
               marginLeft: "10px",
             }}
           >
-           Số lượng: {order?.amount}
+            Số lượng: {order?.amount}
           </div>
           <span
             style={{ fontSize: "13px", color: "#242424", marginLeft: "auto" }}
@@ -86,38 +85,51 @@ const MyOrderPage = () => {
       );
     });
   };
-  const mutation = useMutationHooks(
-    (data) => {
-      const { id, token , orderItems, userId } = data
-      const res = OrderService.cancelOrder(id, token,orderItems, userId)
-      return res
-    }
-  )
+  const mutation = useMutationHooks((data) => {
+    const { id, token, orderItems, userId } = data;
+    const res = OrderService.cancelOrder(id, token, orderItems, userId);
+    return res;
+  });
   const handleCancelOrder = (order) => {
-    mutation.mutate({id : order._id, token:state?.token, orderItems: order?.orderItems, userId: user.id }, {
-      onSuccess: () => {
-        queryOrder.refetch()
+    mutation.mutate(
+      {
+        id: order._id,
+        token: state?.token,
+        orderItems: order?.orderItems,
+        userId: user.id,
       },
-    })
-  }
-  const { isPending: isPendingCancel, isSuccess: isSuccessCancel, isError: isErrorCancel, data: dataCancel } = mutation
+      {
+        onSuccess: () => {
+          queryOrder.refetch();
+        },
+      }
+    );
+  };
+  const {
+    isPending: isPendingCancel,
+    isSuccess: isSuccessCancel,
+    isError: isErrorCancel,
+    data: dataCancel,
+  } = mutation;
 
   useEffect(() => {
-    if (isSuccessCancel && dataCancel?.status === 'OK') {
-      message.success()
-    } else if(isSuccessCancel && dataCancel?.status === 'ERR') {
-      message.error(dataCancel?.message)
-    }else if (isErrorCancel) {
-      message.error()
+    if (isSuccessCancel && dataCancel?.status === "OK") {
+      message.success();
+    } else if (isSuccessCancel && dataCancel?.status === "ERR") {
+      message.error(dataCancel?.message);
+    } else if (isErrorCancel) {
+      message.error();
     }
-  }, [isErrorCancel, isSuccessCancel])
+  }, [isErrorCancel, isSuccessCancel]);
   return (
     <Loading isPending={isPending || isPendingCancel}>
       <WrapperContainer>
-        <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
-          <h2 style={{fontWeight: "bold", textAlign: "center"}}>Đơn hàng của tôi</h2>
+        <div style={{ height: "100vh", width: "1270px", margin: "0 auto" }}>
+          <h2 style={{ fontWeight: "bold", textAlign: "center" }}>
+            Đơn hàng của tôi
+          </h2>
           <WrapperListOrder>
-            {data?.map((order) => {
+            { Array.isArray(data) && data?.map((order) => {
               return (
                 <WrapperItemOrder key={order?._id}>
                   <WrapperStatus>
@@ -151,7 +163,7 @@ const MyOrderPage = () => {
                       }`}</span>
                     </div>
                   </WrapperStatus>
-                      {renderProduct(order?.orderItems)}
+                  {renderProduct(order?.orderItems)}
                   <WrapperFooterItem>
                     <div>
                       <span style={{ color: "rgb(255, 66, 78)" }}>
@@ -169,26 +181,26 @@ const MyOrderPage = () => {
                     </div>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <ButtonComponent
-                       onClick={() => handleCancelOrder(order)}
+                        onClick={() => handleCancelOrder(order)}
                         size={40}
                         styleButton={{
                           height: "36px",
                           border: "1px solid #9255FD",
                           borderRadius: "4px",
                         }}
-                        textButton={"Hủy đơn hàng"}
-                        styleTextButton={{ color: "#9255FD", fontSize: "14px" }}
+                        textbutton={"Hủy đơn hàng"}
+                        styletextbutton={{ color: "#9255FD", fontSize: "14px" }}
                       ></ButtonComponent>
                       <ButtonComponent
-                      onClick={() => handleDetailsOrder(order?._id)}
+                        onClick={() => handleDetailsOrder(order?._id)}
                         size={40}
                         styleButton={{
                           height: "36px",
                           border: "1px solid #9255FD",
                           borderRadius: "4px",
                         }}
-                        textButton={"Xem chi tiết"}
-                        styleTextButton={{ color: "#9255FD", fontSize: "14px" }}
+                        textbutton={"Xem chi tiết"}
+                        styletextbutton={{ color: "#9255FD", fontSize: "14px" }}
                       ></ButtonComponent>
                     </div>
                   </WrapperFooterItem>

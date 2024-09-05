@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import NavbarComponent from '../../components/NavbarComponent/NavbarComponent'
 import CardComponent from '../../components/CardComponent/CardComponent'
 import { Col, Pagination, Row } from 'antd'
-import { WrapperNavbar, WrapperProducts } from './style'
+import { WrapperProducts } from './style'
 import { useLocation } from 'react-router-dom'
 import * as ProductService from "../../services/ProductService";
 import Loading from '../../components/LoadingComponent/Loading'
