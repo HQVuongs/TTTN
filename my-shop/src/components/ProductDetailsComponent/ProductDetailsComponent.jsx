@@ -223,19 +223,11 @@ const ProductDetailsComponent = ({ idProduct }) => {
                 <div style={{ color: "red" }}>Sản phẩm đã hết hàng</div>
               )}
             </div>
-            <ButtonComponent
-              size={40}
-              styleButton={{
-                background: "#fff",
-                height: "48px",
-                width: "220px",
-                border: "1px solid rgb(13, 92, 182)",
-                borderRadius: "4px",
-              }}
-              textbutton={"Mua Trả Sau"}
-              styletextbutton={{ color: "rgb(13, 92, 182)", fontSize: "15px" }}
-            ></ButtonComponent>
           </div>
+              <div>
+                <h2 style={{ paddingTop: "10px"}}>Mô tả sản phẩm</h2>
+                <div>{productDetails?.description}</div>
+              </div>
         </Col>
         <CommentComponent
           dataHref={

@@ -322,8 +322,6 @@ const AdminProduct = () => {
     products?.data?.map((product) => {
       return { ...product, key: product._id };
     });
-    
-    console.log("isError", isError)
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {
       message.success();
