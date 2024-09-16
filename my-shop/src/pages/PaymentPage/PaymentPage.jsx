@@ -109,6 +109,7 @@ const PaymentPage = () => {
         phone: user?.phone,
         city: user?.city,
         paymentMethod: payment,
+        deliveryMethod: delivery,
         itemsPrice: priceMemo,
         shippingPrice: diliveryPriceMemo,
         totalPrice: totalPriceMemo,
@@ -219,6 +220,7 @@ const PaymentPage = () => {
       phone: user?.phone,
       city: user?.city,
       paymentMethod: payment,
+      deliveryMethod: delivery,
       itemsPrice: priceMemo,
       shippingPrice: diliveryPriceMemo,
       totalPrice: totalPriceMemo,
@@ -243,11 +245,11 @@ const PaymentPage = () => {
                       <span style={{ color: "#ea8500", fontWeight: "bold" }}>
                         FAST
                       </span>{" "}
-                      Giao hàng tiết kiệm
+                      Giao hàng nhanh
                     </Radio>
-                    <Radio value="gojek">
+                    <Radio value="grap">
                       <span style={{ color: "#ea8500", fontWeight: "bold" }}>
-                        GO_JEK
+                        GRAP
                       </span>{" "}
                       Giao hàng tiết kiệm
                     </Radio>

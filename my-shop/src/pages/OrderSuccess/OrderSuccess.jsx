@@ -11,7 +11,6 @@ import {
   WrapperItemOrderInfo,
 } from "./style";
 
-import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { orderContent } from "../../content";
 import { convertPrice } from "../../utils";
@@ -31,10 +30,12 @@ const OrderSuccess = () => {
                   <Lable>Phương thức giao hàng</Lable>
 
                   <WrapperValue>
-                    <span style={{ color: "#ea8500", fontWeight: "bold" }}>
-                      {orderContent.delivery[state?.delivery]}
-                    </span>{" "}
-                    Giao hàng tiết kiệm
+                    <span style={{ color: "#ea8500", fontWeight: "bold" }} >
+                      {orderContent.delivery[state?.delivery].split(":")[0]}:
+                    </span>
+                    <span>
+                    {orderContent.delivery[state?.delivery].split(":")[1]}
+                    </span>
                   </WrapperValue>
                 </div>
               </WrapperInfo>

@@ -7,6 +7,7 @@ const initialState = {
 
   },
   paymentMethod: "",
+  deliveryMethod: "",
   itemsPrice: 0,
   shippingPrice: 0,
   taxPrice: 0,

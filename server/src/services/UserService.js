@@ -97,6 +97,17 @@ const updateUser = (id, data) => {
                     message: 'Người dùng không tồn tại'
                 })
             }
+            const isDuplicate = await User.findOne({
+                email: data.email,
+                _id: { $ne: id }, // Loại trừ người dùng hiện tại đang được cập nhật
+              });
+        
+              if (isDuplicate) {
+                reject({
+                  status: "ERR",
+                  message: "Email đã tồn tại",
+                });
+              }
             const updatedUser = await User.findByIdAndUpdate(id, data, { new: true})
             resolve({
                 status: 'OK',
@@ -119,7 +130,7 @@ const updateUser = (id, data) => {
                 _id: id
             })
             if(checkUser === null){
-                resolve({
+                reject({
                     status: 'OK',
                     message: 'The user is not defined'
                 })
@@ -176,7 +187,7 @@ const getDetailsUser= (id) => {
                 _id: id
             })
             if(user === null){
-                resolve({
+                reject({
                     status: 'OK',
                     message: 'Người dùng không tồn tại'
                 })

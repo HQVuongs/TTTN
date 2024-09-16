@@ -1,7 +1,7 @@
 export const orderContent = {
     delivery: {
-        fast: "FAST",
-        gojek: "GO_JEK",
+        fast: "FAST: Giao hàng nhanh",
+        grap: "GRAP: Giao hàng tiết kiệm",
 
     },
     payment: {

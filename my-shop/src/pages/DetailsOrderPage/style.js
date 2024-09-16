@@ -20,8 +20,6 @@ export const WrapperInfoUser = styled.div`
   }
   .name-delivery {
     color: rgb(234, 133, 0); 
-    font-weight: bold;
-    text-transform: uppercase;
   }
   .status-payment {
     margin-top: 8px;

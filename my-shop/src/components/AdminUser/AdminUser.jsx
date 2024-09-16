@@ -266,7 +266,7 @@ const AdminUser = () => {
     } else if (isErrorUpdated) {
       message.error();
     }
-  }, [isSuccessUpdated]);
+  }, [isSuccessUpdated,isErrorUpdated]);
 
   useEffect(() => {
     if (isSuccessDeleted && dataDeleted?.status === "OK") {
@@ -275,7 +275,7 @@ const AdminUser = () => {
     } else if (isErrorDeleted) {
       message.error();
     }
-  }, [isSuccessDeleted]);
+  }, [isSuccessDeleted, isErrorDeleted]);
 
   useEffect(() => {
     if (isSuccessDeletedMany && dataDeletedMany?.status === "OK") {
@@ -283,7 +283,7 @@ const AdminUser = () => {
     } else if (isErrorDeletedMany) {
       message.error();
     }
-  }, [isSuccessDeletedMany]);
+  }, [isSuccessDeletedMany, isErrorDeletedMany]);
   
   const handleCancelDelete = () => {
     setIsModalOpenDelete(false)

@@ -2,8 +2,8 @@ const OrderService = require('../services/OrderService')
 
 const createOrder = async (req, res) => {
     try { 
-        const { paymentMethod, itemsPrice, totalPrice, fullName, address, city, phone } = req.body
-        if (!paymentMethod || !itemsPrice ||!totalPrice || !fullName || !address || !city || !phone) {
+        const { paymentMethod, itemsPrice, totalPrice, fullName, address, city, phone, deliveryMethod } = req.body
+        if (!paymentMethod || !itemsPrice ||!totalPrice || !fullName || !address || !city || !phone || !deliveryMethod) {
             return res.status(200).json({
                 status: 'ERR',
                 message: 'Vui lòng nhập thông tin'
@@ -12,6 +12,7 @@ const createOrder = async (req, res) => {
         const response = await OrderService.createOrder(req.body)
         return res.status(200).json(response)
     } catch (e) {
+
         return res.status(404).json({
             message: e
         })

@@ -17,6 +17,7 @@ const DetailsOrderPage = () => {
   const { state } = location
   const { id } = params
 
+
   const fetchDetailsOrder = async () => {
     const res = await OrderService.getDetailsOrder(id, state?.token)
     return res.data
@@ -50,7 +51,7 @@ const DetailsOrderPage = () => {
           <WrapperInfoUser>
             <WrapperLabel>Hình thức giao hàng</WrapperLabel>
             <WrapperContentInfo>
-              <div className='delivery-info'><span className='name-delivery'>Fast </span>Giao hàng tiết kiệm</div>
+              <div className='delivery-info'><span className='name-delivery'>{orderContent.delivery[data?.deliveryMethod]}</span></div>
               <div className='delivery-fee'><span>Phí giao hàng: </span> {convertPrice(data?.shippingPrice)}</div>
             </WrapperContentInfo>
           </WrapperInfoUser>

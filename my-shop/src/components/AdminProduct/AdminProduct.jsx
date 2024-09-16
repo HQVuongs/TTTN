@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import TableComponent from "../TableComponent/TableComponent";
 import InputComponent from "../InputComponent/InputComponent";
-import { getBase64, renderOptions } from "../../utils";
+import { convertPrice, getBase64, renderOptions } from "../../utils";
 import { WrapperUploadFile } from "./style";
 import * as ProductService from "../../services/ProductService";
 import { useMutationHooks } from "../../hooks/userMutationHook";
@@ -320,7 +320,7 @@ const AdminProduct = () => {
   const dataTable =
     products?.data?.length &&
     products?.data?.map((product) => {
-      return { ...product, key: product._id };
+      return { ...product, key: product._id, price: convertPrice(product?.price) };
     });
   useEffect(() => {
     if (isSuccess && data?.status === "OK") {

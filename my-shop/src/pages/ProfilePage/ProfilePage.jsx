@@ -26,8 +26,16 @@ const ProfilePage = () => {
   const [address, setAddress] = useState("");
   const [avatar, setAvatar] = useState("");
   const mutation = useMutationHooks((data) => {
-    const { id, access_token, ...rests } = data;
-    UserService.updateUser(id, access_token, rests);
+    const {
+      id,
+      token,
+      ...rests
+    } = data;
+    const res = UserService.updateUser(
+      id,
+      token,
+    {...rests});
+    return res;
   });
 
   const dispatch = useDispatch();
@@ -40,9 +48,8 @@ const ProfilePage = () => {
     setAddress(user?.address);
     setAvatar(user?.avatar);
   }, [user]);
-
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && data?.status === "OK") {
       message.success();
       handleGetDetailUser(user?.id, user?.access_token);
     } else if (isError) {
